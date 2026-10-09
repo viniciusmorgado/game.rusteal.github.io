@@ -1,0 +1,88 @@
+# Attributes
+
+Every attribute Rusteal's macros accept. Anything not listed here is a compile error, with a message naming what is accepted.
+
+## `#[uclass(...)]`
+
+On a struct: the struct is an Unreal class.
+
+| Argument | Required | What it is |
+|---|---|---|
+| `parent = Type` | yes | The parent class: an engine class from the bindings, or a Rust class. |
+| `implements = ["path", ...]` | no | Unreal interfaces the class implements, by class path. See [Interfaces](../classes/interfaces.md). |
+| `config = "Category"` | no | The config category its `Config` properties are read from and saved to. See [Project settings and config](../systems/settings.md). |
+
+## `#[uproperty(...)]`
+
+On a field of a `#[uclass]` or a `#[ustruct]`: the field is an Unreal property.
+
+| Argument | What it is |
+|---|---|
+| `EditAnywhere` | Editable on the class defaults and on each instance. |
+| `EditDefaultsOnly` | Editable on the class defaults only. |
+| `VisibleAnywhere` | Shown, read-only. |
+| `BlueprintReadWrite` | Get and Set nodes in Blueprints. |
+| `BlueprintReadOnly` | A Get node in Blueprints. |
+| `SaveGame` | Written by save game archives. |
+| `Config` | Read from and saved to the class's config category. |
+| `default = value` | The default value, for scalars and enums (not in a `#[ustruct]`). |
+| `name = "Name"` | The Unreal name. |
+| `category = "Category"` | The category in the Details panel; `"A|B"` for a subcategory. |
+
+See [Properties](../classes/properties.md).
+
+## `#[component(...)]`
+
+On a field of a `#[uclass]`: the field is a default subobject, created with every instance.
+
+| Argument | What it is |
+|---|---|
+| `root` | The actor's root component. |
+| `attach = "field"` | The component it attaches to: a field of the class, of a Rust parent, or an inherited engine component by field-style name (`root_component`, `mesh`). |
+| `socket = "Socket"` | The socket on the parent component. |
+| `name = "Name"` | The component's name, when it is not the field's. |
+
+See [Components](../classes/components.md).
+
+## A field with no attribute
+
+Rust's alone: any Rust type, a getter returning a clone, a `set_` setter and a `_mut` accessor. Reset by hot reload, invisible to the garbage collector.
+
+## `#[uclass_impl]`
+
+On an `impl` block of a `#[uclass]`: its marked methods are the class's Unreal functions, events, delegates and defaults. A class can have several.
+
+## `#[ufunction(...)]`
+
+On a method in a `#[uclass_impl]` block.
+
+| Argument | What it is |
+|---|---|
+| (none), `BlueprintCallable` | A function with execution pins, callable by name. |
+| `BlueprintPure` | A function without execution pins. |
+| `BlueprintImplementableEvent` | An event the Blueprint child implements; empty body. |
+| `Override` | An event of the parent class implemented in Rust. |
+| `Exec` | Also a console command (with the default kind or `BlueprintPure`). |
+| `name = "Name"` | The Unreal name. |
+
+`Override`, `BlueprintPure` and `BlueprintImplementableEvent` exclude each other. See [Functions](../classes/functions.md) and [Engine events](../classes/events.md).
+
+## `#[udelegate]` and `#[udelegate(name = "Name")]`
+
+On a method with an empty body in a `#[uclass_impl]` block: a multicast delegate, assignable from Blueprints. Calling it broadcasts; `<name>_add(closure)` and `<name>_add_ufunction(&target, "Function")` bind Rust listeners. See [Delegates](../engine_api/delegates.md).
+
+## `#[class_defaults]`
+
+On a method in a `#[uclass_impl]` block, returning `RustealResult<()>` or nothing: runs once on the class default object. See [Class defaults](../classes/class_defaults.md).
+
+## `#[ustruct]`
+
+On a struct whose fields are all `#[uproperty]`: an Unreal struct, with a `<Name>Ext` trait of getters and setters. See [Structs and data tables](../classes/structs.md).
+
+## Macros
+
+| Macro | What it does |
+|---|---|
+| `rusteal_runtime::entry!()` | Once per library, in `lib.rs`: the entry point the plugin calls when it loads the library. |
+| `rusteal_runtime::on_load!(function)` | Runs a function every time the library loads, hot reloads included. |
+| `ulog!(level, "format", args...)` | Writes to the Output Log. |

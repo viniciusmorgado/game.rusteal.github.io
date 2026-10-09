@@ -1,0 +1,86 @@
+# CLI reference
+
+Commands that take `[project]` find the project by walking up from the current directory when it is left out.
+
+## rusteal new
+
+```bash
+rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--no-build]
+```
+
+Creates a project from a template, installs the plugins, writes the Rust workspace and runs the whole build. See [Your first project](../getting_started/first_project.md) and [Starting from a template](../getting_started/templates.md).
+
+## rusteal setup
+
+```bash
+rusteal setup <project>
+```
+
+Installs the Rusteal plugins into an existing project and writes a starter `rusteal.toml`. See [Adding Rusteal to an existing project](../getting_started/existing_project.md).
+
+## rusteal build
+
+```bash
+rusteal build [project] [--all | --from <n> | --step <n>] [--release] [--plugin <Name>]
+```
+
+Without flags, steps 4 and 5: build the Rust libraries and deploy them. See [Building](../cli/build.md).
+
+## rusteal watch
+
+```bash
+rusteal watch [project] [--plugin <Name>]
+```
+
+Runs `rusteal build` every time a Rust source changes, until `Ctrl+C`. See [rusteal watch](../iteration/watch.md).
+
+## rusteal generate
+
+```bash
+rusteal generate [project]
+```
+
+Regenerates the bindings crate and the C++ wrappers from the exported reflection.
+
+## rusteal upgrade
+
+```bash
+rusteal upgrade [project]
+```
+
+Moves the project to the CLI's Rusteal version. See [Versions and upgrades](../getting_started/versions.md).
+
+## rusteal package
+
+```bash
+rusteal package [project] [--shipping] [--output <dir>]
+```
+
+Builds the release libraries and packages the game. See [Packaging a game](../shipping/packaging.md).
+
+## rusteal plugin new
+
+```bash
+rusteal plugin new <Name> [--template <name>] [--project <path>] [--no-build]
+```
+
+Creates a Rust plugin in the project. See [A new plugin](../plugins/new_plugin.md).
+
+## rusteal plugin package
+
+```bash
+rusteal plugin package <Name> [--project <path>] [--output <dir>]
+```
+
+Copies a plugin out with its release library. See [Packaging a plugin](../plugins/packaging.md).
+
+## Console commands
+
+| Command | What it does |
+|---|---|
+| `Rusteal.Reload` | Reloads every Rust library of the project. |
+| `Rusteal.Reload <Name>` | Reloads one library: the project's name for the game's, the plugin's name for a plugin's. |
+| `Rusteal.AutoReload 0` | Stops reloading on deploy. |
+| `Rusteal.AutoReload 1` | Reloads on deploy (the default). |
+
+See [Console commands](../iteration/console.md).

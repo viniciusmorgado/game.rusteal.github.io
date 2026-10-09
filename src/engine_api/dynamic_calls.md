@@ -1,0 +1,44 @@
+# Dynamic calls
+
+**The goal:** call a function the bindings do not have: one a Blueprint declares, one of a module the project does not bind, one of a plugin's Rust class.
+
+```rust
+use rusteal_runtime::runtime::DynamicCall;
+
+let mut call = DynamicCall::new(&door, "OpenDoor")?;
+call.set("Speed", 2.0f32)?;
+let result = call.call()?;
+let opened: bool = result.get("ReturnValue")?;
+```
+
+`DynamicCall` calls any reflected function by name, with the engine's reflection, as a Blueprint node does:
+
+| Method | What it does |
+|---|---|
+| `DynamicCall::new(&object, "Function")` | Finds the function on the object's class, or `Err(FunctionNotFound)`. |
+| `call.set("Param", value)` | Sets a parameter by its Unreal name. |
+| `call.set_struct("Param", &owned_struct)` | Sets a struct parameter. |
+| `call.call()` | Calls it, and returns the result. |
+| `result.get::<T>("Name")` | Reads the return value (`"ReturnValue"`) or an out parameter. |
+
+Values are passed as they are in memory: `bool`, numbers, `f32` for `float`, `f64` for `double`, an object's handle (`object.raw()`), an `FName`'s handle.
+
+## Use case: a function of a Blueprint
+
+**The goal:** Rust code calls a function a designer wrote in a Blueprint.
+
+```rust
+let mut call = DynamicCall::new(&actor, "PlayIntro")?;
+call.set("Delay", 0.5f32)?;
+call.call()?;
+```
+
+The function name and the parameter names are the ones the Blueprint shows. A Blueprint function renamed in the editor breaks the call at runtime, with a `FunctionNotFound` error, not at compile time.
+
+## When to prefer something else
+
+Dynamic calls skip the compiler's checks: a wrong name or a wrong type is found when the game runs. Prefer:
+
+- the bindings, for engine functions (bind the module in `rusteal.toml` if it is missing; see [Binding more of the engine](../cli/rusteal_toml.md));
+- a `BlueprintImplementableEvent`, when Rust calls into a Blueprint child of a Rust class (see [Functions](../classes/functions.md));
+- an interface, when the object may be one of several classes (see [Interfaces](../classes/interfaces.md)).
