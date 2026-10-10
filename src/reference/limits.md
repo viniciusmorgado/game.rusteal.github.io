@@ -2,6 +2,13 @@
 
 What Rusteal does not do yet, and what to do meanwhile.
 
+## Platforms
+
+| Not yet | Meanwhile |
+|---|---|
+| Android and iOS builds (being actively worked on) | Run and test the game in the editor on Linux or Windows, touch controls included; the `ar` template runs there without an AR session. |
+| Console builds (being actively worked on) | Linux and Windows builds. |
+
 ## Classes
 
 | Not yet | Meanwhile |
