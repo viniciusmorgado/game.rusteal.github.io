@@ -4,7 +4,7 @@ The engine fails in ways C++ code tends to crash on: an object destroyed while s
 
 ## What an error says
 
-A `RustealError` says what went wrong, on which Unreal object, and where in your Rust code:
+A `RustealError` says what went wrong, on which Unreal object, why Unreal refused when it says, and where in your Rust code:
 
 ```text
 invalid cast: expected Pawn (object StaticMeshActor_0 of class StaticMeshActor)
@@ -15,6 +15,7 @@ while aiming at the target
 
 - **What**: its kind, and the name involved (the property, the function, the class a cast expected).
 - **On what**: the object's name and its class, when the error came from an object.
+- **Why, says Unreal**: when the engine side knows more than the kind, its reason, after `Unreal:`: `type mismatch: Unreal: Ammo (IntProperty of Turret) is not a BoolProperty`, `index out of range: Unreal: index 5 past the 3 elements of Targets (ArrayProperty of Turret)`.
 - **Where**: the file and line of the call that failed in your code, not inside Rusteal: the functions that return a `RustealResult` pass their caller's location along.
 - **While doing what**: the contexts your code added on the way up (below).
 - **Caused by**: the error underneath, when it came from another library (a file that did not open, a number that did not parse).
@@ -27,7 +28,43 @@ It prints three ways:
 | `{e:#}` | The same line, then the causes and the location. | A log line with everything. |
 | `{e:?}` | The report above, one item per line. | Debugging; it is also what `unwrap()` prints when it panics. |
 
-`e.log(LOG_WARNING)` writes the report to the Output Log.
+`e.log(LOG_WARNING)` reports it (see [In the editor](#in-the-editor)).
+
+## In the editor
+
+A reported error goes to two places:
+
+- the **Output Log**, as the report above, followed by the Blueprint call stack when a Blueprint was running;
+- the **Rusteal** tab of the **Message Log** (*Window > Message Log*, then **Rusteal** in its list), one line per error. Its object is a link that selects it, and its Rust file and line are a link that opens the file at that line in the IDE set in *Editor Preferences > General > Source Code*. An error also shows a notification, at most once every few seconds.
+
+> **Screenshot:** the Message Log's Rusteal tab with an invalid cast error, its object link and its errors.rs:42 link. *(images/engine_api/message_log.png)*
+
+Panics are reported the same way, with the file and line of the `panic!`, the `unwrap()` or the index out of bounds.
+
+## Use case: a function that can fail
+
+**The goal:** a Blueprint calls a Rust function that can fail, and the failure is a Blueprint runtime error on the node that called it, not a silent default.
+
+A `#[ufunction]` (or an `Override`) returns a `RustealResult<T>` when it can fail. Unreal sees a function returning `T` (nothing for `RustealResult<()>`):
+
+```rust
+#[ufunction]
+fn reload(&mut self) -> RustealResult<i32> {
+    let magazine = self.magazine().checked()?;
+    Ok(magazine.rounds())
+}
+
+#[ufunction(Override)]
+fn receive_begin_play(&mut self) -> RustealResult<()> {
+    self.setup()
+}
+```
+
+An `Err` is reported with the function's name (`Turret::Reload failed: ...`) and the function returns the default value (`0`, `false`, a null reference). Called from a Blueprint, it is also a Blueprint runtime error: in Play In Editor the **Message Log** opens on it with a link to the node, as for an *Accessed None*, and with *Blueprint Exceptions* breakpoints on, the debugger stops there.
+
+> **Screenshot:** a Blueprint runtime error raised by a Rust function, with the link to the calling node in the Message Log. *(images/engine_api/blueprint_error.png)*
+
+The same panic, unwrap or `?` inside a function that does not return a `RustealResult` is still caught: a panic is reported as above, and the function returns the default value.
 
 ## Use case: Result inside, log at the edge
 
@@ -121,4 +158,4 @@ fn spend(&mut self, cost: i32) -> RustealResult<()> {
 
 ## Panics
 
-A panic in your code does not crash the editor: it is caught where the engine called into Rust, logged as an error in the Output Log, and the call returns. The object may be left half updated, so a panic is a bug to fix, not a way to handle errors. `unwrap()` on a `RustealResult` is a panic waiting for an object to be destroyed at the wrong moment: prefer `?`, `let else` or `unwrap_or_default()`.
+A panic in your code does not crash the editor: it is caught where the engine called into Rust, reported as an error with its file and line (see [In the editor](#in-the-editor)), and the call returns. The object may be left half updated, so a panic is a bug to fix, not a way to handle errors. `unwrap()` on a `RustealResult` is a panic waiting for an object to be destroyed at the wrong moment: prefer `?`, `let else` or `unwrap_or_default()`.
