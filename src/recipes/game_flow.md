@@ -92,6 +92,80 @@ impl CoopGameMode {
 
 See [Health, damage and death](combat.md), "Respawning the player".
 
+## Use case: one actor switching others
+
+**The goal:** stepping on a trigger switches the lights wired to it and unlocks a door, which the next step locks again.
+
+The trigger declares an event and broadcasts it on every overlap:
+
+```rust
+#[uclass_impl]
+impl TriggerSwitch {
+    #[udelegate(name = "Trigger")]
+    pub fn trigger(&self) {}
+
+    #[ufunction(Override)]
+    fn receive_actor_begin_overlap(&mut self, _other_actor: UObjectRef<Actor>) {
+        self.trigger();
+        self.set_is_on(!self.is_on());
+    }
+}
+```
+
+What it drives holds a reference to it, set on each placed actor in the **Details** panel, and binds one of its functions when play begins:
+
+```rust
+#[ufunction(Override)]
+fn receive_begin_play(&mut self) {
+    let me = self.as_ref();
+
+    if let Ok(trigger) = TriggerSwitch::from_obj(self.trigger()) {
+        let _ = trigger.trigger_add_ufunction(&me, "Unlock");
+    }
+}
+
+#[ufunction]
+fn unlock(&mut self) {
+    self.set_unlocked(!self.unlocked());
+
+    if self.unlocked() {
+        self.open_door();
+    } else {
+        self.close_door();
+    }
+}
+```
+
+The `interactables` feature has the trigger (`BP_DoorTrigger`), lights (`BP_Light`), a door (`BP_DoorFrame_Unlockable`) and a confetti burst (`BP_ConfettiTrigger`) wired this way.
+
+## Use case: a door that slides open
+
+**The goal:** a door that opens in 0.3 seconds as a player comes near and closes when the last one leaves, eased like the Blueprint timeline it replaces.
+
+The timeline's curve is a few keys with their tangents, evaluated in Rust, and its playhead moves in the actor's tick:
+
+```rust
+const DOOR_CONTROL: [Key; 2] = [
+    curve::key(0.0, 0.0, 0.0, 7.314_739),
+    curve::key(0.3, 1.0, 0.0, 0.0),
+];
+
+#[ufunction(Override)]
+fn receive_tick(&mut self, delta_seconds: f32) {
+    let mut timeline = self.timeline();
+
+    if !timeline.is_playing() {
+        return;
+    }
+
+    let position = timeline.advance(f64::from(delta_seconds), DOOR_CONTROL_LENGTH);
+    self.set_timeline(timeline);
+    self.move_doors(curve::eval(&DOOR_CONTROL, position));
+}
+```
+
+`timeline.play()` runs it forward from where it is, `timeline.reverse()` back, so a player who turns around mid-way closes the door from there. The door's frame and leaves are built in the construction script (`user_construction_script`) from its **Door Size**, **Split Door** and **Door Thickness**, with `add_component_by_class`.
+
 ## Use case: changing level
 
 ```rust

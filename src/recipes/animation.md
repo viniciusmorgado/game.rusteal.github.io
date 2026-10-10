@@ -202,3 +202,82 @@ if let Ok(mut hand_anim) = HandAnimInstance::from_obj(anim) {
 The variable types follow the Blueprint's: a Blueprint **Float** that is double precision is `f64`, one stored in single precision is `f32`. When they match, the AnimGraph's nodes take the Rust property in place of a variable of the same name.
 
 Template: `vr`.
+
+## Use case: a mannequin that copies the player
+
+**The goal:** a mannequin in the level that walks, runs, jumps and lands when the player does, as the Intro To Unreal template's copycat.
+
+The `mannequin` feature's `CopycatAnimInstance` reads player 0's character every animation update and keeps what an AnimGraph needs:
+
+```rust
+#[ufunction(Override)]
+fn blueprint_update_animation(&mut self, _delta_time_x: f32) {
+    if !self.character().is_valid() || !self.movement_component().is_valid() {
+        self.find_character();
+    }
+
+    let (Ok(anim), Ok(character), Ok(movement)) = (
+        self.as_ref().checked(),
+        self.character().checked(),
+        self.movement_component().checked(),
+    ) else {
+        return;
+    };
+
+    let velocity = movement.get_velocity();
+    let ground_speed = ground_speed(velocity.to_dvec3());
+    let direction = f64::from(anim.calculate_direction(&velocity, &character.k2_get_actor_rotation()));
+
+    self.set_ground_speed(ground_speed);
+    self.set_direction(clamp_direction(direction, movement.get_orient_rotation_to_movement()));
+    self.set_should_move(should_move(ground_speed, movement.get_current_acceleration().to_dvec3()));
+    self.set_is_falling(movement.is_falling());
+}
+```
+
+`ground_speed`, `should_move` and `clamp_direction` are plain functions, tested with `cargo test`: the speed ignores the vertical axis, the mannequin moves only above 0.01 cm/s and while the character accelerates, and the direction stays within 45 degrees when the character turns toward its movement. `ABP_Copycat` is a child of `CopycatAnimInstance` whose AnimGraph blends idle, walk and run by **Ground Speed** and switches to a jump on **Is Falling**. Setting the instance's **Source Character** copies another character than the player.
+
+Any skeletal mesh of the `SK_Mannequin` skeleton takes it: Manny, Quinn, or a mannequin of your own on that skeleton.
+
+## Use case: a hand that reaches for a target
+
+**The goal:** a mannequin plays its idle and, when a target comes within arm's length, its right hand goes to it.
+
+The animation plays on a hidden skeletal mesh; every tick, a poseable mesh copies that pose and bends the arm with a two-bone IK solved in Rust:
+
+```rust
+let pose = self.pose()?.checked()?;
+pose.copy_pose_from_skeletal_component(self.body()?);
+
+let chain = Chain {
+    root: location("upperarm_r"),
+    joint: location("lowerarm_r"),
+    end: location("hand_r"),
+};
+
+let solved = ik::reach(chain, target, down);
+
+for (bone, rotation, location) in [
+    ("upperarm_r", solved.root_delta * rotation("upperarm_r"), chain.root),
+    ("lowerarm_r", solved.joint_delta * solved.root_delta * rotation("lowerarm_r"), solved.joint),
+    ("hand_r", rotation("hand_r"), solved.end),
+] {
+    pose.set_bone_transform_by_name(
+        FName::new(bone).handle(),
+        &FTransform::from_transform(Transform::new(rotation, location, DVec3::ONE)),
+        EBoneSpaces::WorldSpace,
+    );
+}
+```
+
+`ik::reach` keeps both bone lengths, places the elbow in the plane of its current bend (nudged by a pole, here down), and returns the rotations that carry each bone onto the solution. Each bone gets its whole world transform: `set_bone_rotation_by_name` would read the bone's location from before its parent moved, and pull the elbow off the arm.
+
+The hidden mesh keeps animating with **Visibility Based Anim Tick Option** set to **Always Tick Pose and Refresh Bones**, and plays an animation asset without an Animation Blueprint:
+
+```rust
+body.play_animation(self.idle_animation().upcast_to(), true);
+```
+
+In the editor: place a **ReachingMannequin** and a **ReachTarget** from the **Place Actors** panel, select the mannequin and set its **Target** to the target, then move the target around it while playing.
+
+> **Screenshot:** the reaching mannequin with its right hand on the target sphere. *(images/recipes/reach_target.png)*

@@ -6,21 +6,21 @@ Complete use cases, each one taken from a Rusteal template, where it runs as par
 |---|---|
 | [Character movement and input](input.md) | every template |
 | [Cameras](cameras.md) | `third-person`, `first-person`, `third-person --variant side-scrolling` |
-| [Animation](animation.md) | `third-person --variant combat`, `third-person --variant platforming`, `vr` |
+| [Animation](animation.md) | `third-person --variant combat`, `third-person --variant platforming`, `vr`, `intro` and the `mannequin` feature |
 | [Health, damage and death](combat.md) | `first-person --variant shooter`, `third-person --variant combat` |
 | [Projectiles and weapons](projectiles.md) | `first-person --variant shooter`, `top-down --variant twin-stick` |
 | [Pickups](pickups.md) | `first-person --variant shooter`, `third-person --variant side-scrolling` |
 | [Platforming](platforming.md) | `third-person --variant platforming`, `third-person --variant side-scrolling` |
-| [Physics](physics.md) | `third-person --variant combat` |
+| [Physics](physics.md) | `third-person --variant combat`, `intro` and the `interactables` feature |
 | [UI](ui.md) | `first-person --variant horror`, `top-down --variant strategy`, `third-person --variant combat`, `vr`, `ar` |
 | [AI](ai.md) | `first-person --variant shooter`, `third-person --variant combat`, `top-down --variant strategy` |
 | [Point and click](point_and_click.md) | `top-down` |
-| [Effects and sound](effects.md) | `top-down` |
+| [Effects and sound](effects.md) | `top-down`, `intro` and the `interactables` feature |
 | [Vehicles](vehicles.md) | `vehicle`, `vehicle --variant time-trial` |
 | [Virtual reality](vr.md) | `vr` |
 | [Augmented reality](ar.md) | `ar` |
-| [Game flow](game_flow.md) | every template |
-| [Saving the game](save_game.md) | |
+| [Game flow](game_flow.md) | every template; `intro` and the `interactables` feature for triggers and doors |
+| [Saving the game](save_game.md) | `intro` and the `checkpoints` feature |
 | [An inventory](inventory.md) | the `inventory` plugin template |
 
 ```bash

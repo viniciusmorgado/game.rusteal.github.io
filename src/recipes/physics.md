@@ -116,6 +116,8 @@ impl Dummy {
 
 The constraint's limits (swing, twist) are set on the component in the Blueprint child's **Details** panel.
 
+A chain is the same thing repeated: the `interactables` feature's `BP_DangleBlocks` has four cubes and four constraints, the first holding the top cube to the world (its **Component Name 1** names no component) and each other one a cube to the one above, with where each piece sits and how far each joint swings. Its Rust parent, `DangleBlocks`, has no code: the Blueprint is all data.
+
 ## Collision presets and channels
 
 | Call | What it does |

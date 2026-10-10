@@ -88,3 +88,60 @@ impl HorrorCharacter {
 ```
 
 Turning it on and off is `light.set_visibility(on, None)`, bound to an input action.
+
+## Use case: a MetaSound parameter
+
+**The goal:** a tuning fork whose MetaSound plays a pattern chosen by a seed set on each placed fork.
+
+```rust
+#[ufunction(Override)]
+fn receive_tick(&mut self, _delta_seconds: f32) {
+    if let Ok(audio) = self.audio().and_then(|a| a.checked()) {
+        audio.set_int_parameter(FName::new("Seed").handle(), self.random_seed());
+    }
+}
+```
+
+The audio component's **Sound** is the MetaSound source; any of its inputs is set by name with `set_int_parameter`, `set_float_parameter` or `set_bool_parameter`.
+
+## Use case: an effect a moment after a trigger
+
+**The goal:** a confetti burst one second after a trigger first fires, and never again.
+
+```rust
+#[ufunction]
+fn trigger_confetti(&mut self) {
+    if self.fired() {
+        return;
+    }
+
+    self.set_fired(true);
+    KismetSystemLibrary::k2_set_timer(self.as_ref().upcast_to(), "Burst", 1.0, false, None, None, None);
+}
+
+#[ufunction]
+fn burst(&mut self) {
+    if let Ok(niagara) = self.niagara().and_then(|n| n.checked()) {
+        niagara.activate(Some(true));
+    }
+}
+```
+
+The Niagara component is not auto-activated; `activate(Some(true))` restarts it from the beginning.
+
+## Use case: playing a level sequence
+
+**The goal:** walking into an area plays a cinematic placed in the level.
+
+```rust
+#[ufunction(Override)]
+fn receive_actor_begin_overlap(&mut self, _other_actor: UObjectRef<Actor>) {
+    if let Ok(sequence) = self.seq_ref().checked()
+        && let Ok(player) = sequence.get_sequence_player().checked()
+    {
+        player.play();
+    }
+}
+```
+
+`seq_ref` is a `UObjectRef<LevelSequenceActor>` set on the placed trigger. The project binds the sequencer modules with the `level-sequence` and `movie` features (see [Binding more of the engine](../cli/rusteal_toml.md)).

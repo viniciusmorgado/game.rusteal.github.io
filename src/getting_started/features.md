@@ -8,9 +8,12 @@ rusteal new MyGame --template third-person --feature mannequin
 
 | Feature | Plugin | What it is |
 |---|---|---|
-| `mannequin` | `Mannequin` | `CopycatAnimInstance`, a parent for Animation Blueprints that copies a character's movement: its ground speed, direction, whether it moves and whether it falls. It copies the player unless its **Source Character** names another character. |
+| `mannequin` | `Mannequin` | `CopycatAnimInstance`, a parent for Animation Blueprints that copies a character's movement, and `BP_CopycatMannequin`, the Intro To Unreal template's mannequin that walks, runs and jumps with the player; `ReachingMannequin`, whose right hand reaches for a `ReachTarget` placed in the level. |
+| `checkpoints` | `Checkpoints` | `BP_SpawnPoint`s that save where the player got to, and a subsystem that starts the level there. |
+| `interactables` | `Interactables` | A trigger (`BP_DoorTrigger`) and what it drives: lights, a door it unlocks, a confetti burst; a trigger that plays a level sequence, a MetaSound with a seed, and blocks dangling from physics constraints. |
+| `tour` | `Tour` | The pieces of the Intro To Unreal tour: texts that change in game, station titles, animated keyboard keys and mouse, gizmo demos, template cubes, decal arrows along a spline and editor panels shown in game. |
 
-Each feature becomes a plugin in `Plugins/<Plugin>/`, enabled in the `.uproject` and built with the project: its Rust classes are in `Plugins/<Plugin>/Rust/`, and `rusteal build` builds them with the game's. When the project lacks the engine content the feature uses, it is copied in: `mannequin` brings the `Characters` pack (`Content/Characters/Mannequins`), which the third person and first person templates already have.
+Each feature becomes a plugin in `Plugins/<Plugin>/`, enabled in the `.uproject` and built with the project: its Rust classes are in `Plugins/<Plugin>/Rust/`, and `rusteal build` builds them with the game's. When the project lacks the engine content the feature uses, it is copied in: `mannequin` brings the `Characters` pack (`Content/Characters/Mannequins`), which the third person and first person templates already have, and `interactables` and `tour` the `LevelPrototyping` pack. Each feature's Blueprints are in its plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open the plugin's folder, **Plugins > Mannequin Content** for the `mannequin` feature.
 
 An existing project takes a feature as a plugin:
 

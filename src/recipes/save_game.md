@@ -49,6 +49,40 @@ pub fn load_progress() -> Option<Progress> {
 - The second argument of each is the user index, `0` for a single player.
 - Saves go to `Saved/SaveGames/<slot>.sav` in the project during development, and to the platform's save location in a packaged game.
 
+## Use case: checkpoints
+
+**The goal:** walking past a spawn point saves the player's progress; the next time the level starts, the player starts there.
+
+The `checkpoints` feature keeps the save in a world subsystem, which loads it when the level begins and moves the player:
+
+```rust
+#[ufunction(Override)]
+fn receive_world_begin_play(&mut self) {
+    self.load_game_data();
+    self.respawn_player();
+}
+```
+
+`load_game_data` loads the slot, or creates and saves an empty `CheckpointSaveData` when there is none; `respawn_player` moves the pawn and its controller's rotation to the saved spawn point when the save is for this level. Spawn points tell the subsystem when the player walks into them:
+
+```rust
+#[ufunction(Override)]
+fn receive_actor_begin_overlap(&mut self, other_actor: UObjectRef<Actor>) {
+    let me = self.as_ref();
+    let player = GameplayStatics::get_player_pawn(me.upcast_to(), 0);
+
+    if other_actor != player.upcast_to() {
+        return;
+    }
+
+    if let Ok(mut checkpoints) = CheckpointSubsystem::get(me.upcast_to()) {
+        checkpoints.update_spawn_point(me.upcast_to());
+    }
+}
+```
+
+The save keeps the level's name and the spawn point's location and rotation, so it holds when the spawn point moves between sessions. **Respawn Player** and **Clear Checkpoint** are callable from Blueprints, for a fall into the void or a new game.
+
 ## The SaveGame specifier
 
 `save_game_to_slot` writes a `SaveGame` object whole, flagged or not. The `SaveGame` specifier matters when the object is serialized some other way: an archive that is a save game archive (the usual way to save actors' state, for example in a save system that walks the level's actors) writes only the properties that carry it. Marking the fields keeps them right in both cases.
