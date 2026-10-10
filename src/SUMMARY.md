@@ -71,6 +71,7 @@
 - [Effects and sound](./recipes/effects.md)
 - [Vehicles](./recipes/vehicles.md)
 - [Virtual reality](./recipes/vr.md)
+- [Augmented reality](./recipes/ar.md)
 - [Game flow](./recipes/game_flow.md)
 - [Saving the game](./recipes/save_game.md)
 - [An inventory](./recipes/inventory.md)

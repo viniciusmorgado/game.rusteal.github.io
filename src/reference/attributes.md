@@ -27,6 +27,9 @@ On a field of a `#[uclass]` or a `#[ustruct]`: the field is an Unreal property.
 | `Config` | Read from and saved to the class's config category. |
 | `BindWidget` | On a `UserWidget` class: the widget of the same name in the Widget Blueprint's layout, which must have one. |
 | `BindWidgetOptional` | The same, when the layout may leave it out. |
+| `BindWidgetAnim` | On a `UserWidget` class: the Widget Blueprint's animation of the same name (a `UObjectRef<WidgetAnimation>`); it makes the property `Transient`. |
+| `BindWidgetAnimOptional` | The same, when the Widget Blueprint may not have it. |
+| `Transient` | Not saved with the object or its class defaults. |
 | `default = value` | The default value, for scalars, engine enums and `#[uenum]`s (not in a `#[ustruct]`). |
 | `name = "Name"` | The Unreal name. |
 | `category = "Category"` | The category in the Details panel; `"A|B"` for a subcategory. |

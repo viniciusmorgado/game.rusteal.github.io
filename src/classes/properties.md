@@ -115,7 +115,7 @@ The Unreal name is what Blueprints, ini files, data tables and editor Python see
 | `SubclassOf<T>` | `TSubclassOf<T>`: a class, such as a Blueprint to spawn |
 | `SoftObjectRef<T>` | `TSoftObjectPtr<T>`: an asset by path, loaded on demand |
 | `OwnedStruct<T>` | a struct: `FVector`, `FLinearColor`, `FTransform`, `FDataTableRowHandle`, a `#[ustruct]` of yours |
-| `UeArray<T>` of the scalars, objects, classes or `FName` | `TArray<T>` |
+| `UeArray<T>` of the scalars, objects, classes, `FName` or structs (`UeArray<OwnedStruct<FLinearColor>>`) | `TArray<T>` |
 
 Maps and sets (`TMap`, `TSet`) cannot be declared yet; two arrays side by side, or a Rust-only `HashMap`, do the job meanwhile.
 

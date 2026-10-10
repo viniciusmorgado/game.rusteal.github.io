@@ -214,6 +214,43 @@ A `BindWidget` property is C++'s `UPROPERTY(meta = (BindWidget))`: when the widg
 
 Template: `vr` (the 3D menu).
 
+## Use case: playing a Widget Blueprint's animations
+
+**The goal:** a flash plays over the screen when the player takes a screenshot, an animation drawn in the UMG designer's **Animations** panel and started from Rust.
+
+```rust
+use bindings::umg::{EUMGSequencePlayMode, UserWidget, UserWidgetExt, WidgetAnimation};
+
+#[uclass(parent = UserWidget)]
+pub struct MainMenu {
+    #[uproperty(BindWidgetAnim, BlueprintReadOnly, name = "Screenshot_Show")]
+    screenshot_show: UObjectRef<WidgetAnimation>,
+}
+
+#[uclass_impl]
+impl MainMenu {
+    #[ufunction(BlueprintCallable)]
+    pub fn take_screenshot(&mut self) {
+        let me = self.as_ref().upcast_to::<UserWidget>();
+
+        if let Ok(widget) = me.checked() {
+            widget.play_animation(
+                self.screenshot_show(),
+                Some(0.0),
+                Some(1),
+                Some(EUMGSequencePlayMode::Forward),
+                Some(1.0),
+                Some(false),
+            );
+        }
+    }
+}
+```
+
+`BindWidgetAnim` binds the Widget Blueprint's animation of the same name, as `BindWidget` binds a widget; the property is made `Transient`, since the engine sets it on each created widget. To run code when the animation ends, set a timer for `get_end_time()` seconds with `KismetSystemLibrary::k2_set_timer`.
+
+Template: `ar` (the main menu's screenshot flash and tutorial).
+
 ## Use case: drawing on the HUD
 
 **The goal:** a selection box drawn while dragging the mouse.
