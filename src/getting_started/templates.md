@@ -7,7 +7,7 @@ rusteal new MyGame --template third-person
 rusteal new MyGame --template third-person --variant combat
 ```
 
-A template is one of the engine's templates with its gameplay written in Rust. The C++ classes are gone, the Rust crate in `Rust/` takes their place, and their Blueprint children, with the same names, have Rust parents. The engine's Blueprint-only templates (`vr`, `ar`) keep their Blueprints, reparented to Rust classes and holding only data: meshes, materials, effects, input assets, widget layouts and Anim Blueprint graphs. Open the project and press **Play**: it plays like the engine's template.
+A template is one of the engine's templates with its gameplay written in Rust. The C++ classes are gone, the Rust crate in `Rust/` takes their place, and their Blueprint children, with the same names, have Rust parents. The engine's Blueprint-only templates (`vr`, `ar`, `intro`) keep their Blueprints, reparented to Rust classes and holding only data: meshes, materials, effects, input assets, widget layouts and Anim Blueprint graphs. Open the project and press **Play**: it plays like the engine's template.
 
 The engine's templates come with variants, genre starting points that the C++ version puts all in one project. In Rusteal each variant is its own project: `--variant` picks one, and without it the project is the template alone. A variant project opens on the variant's level.
 
@@ -20,6 +20,7 @@ The engine's templates come with variants, genre starting points that the C++ ve
 | `top-down` | | The Top Down template: its character, game mode and point and click player controller in Rust (mouse, touch). |
 | `top-down` | `strategy` | A real-time strategy start: units selected with clicks, boxes and touches, sent along the navigation mesh by EnvQueries, and interacting with the units they reach. |
 | `top-down` | `twin-stick` | A twin stick shooter: projectiles, dashes and area attacks against waves of enemies run by a StateTree, pickups and a combo score. |
+| `intro` | | The Intro To Unreal template: its guided tour level, whose stations are the four features (see [Adding features](features.md)), and its first person character in Rust. Follow the tour from the first station. |
 | `third-person` | | The Third Person template: its character, game mode and player controller in Rust (keyboard, mouse, gamepad, touch). |
 | `third-person` | `combat` | Melee combat: combo and charged attacks, enemies run by a StateTree, spawners, checkpoints, damageable props. |
 | `third-person` | `platforming` | Double jump, wall jump, coyote time, a dash, local multiplayer and respawn. |

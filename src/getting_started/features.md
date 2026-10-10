@@ -15,6 +15,8 @@ rusteal new MyGame --template third-person --feature mannequin
 
 Each feature becomes a plugin in `Plugins/<Plugin>/`, enabled in the `.uproject` and built with the project: its Rust classes are in `Plugins/<Plugin>/Rust/`, and `rusteal build` builds them with the game's. When the project lacks the engine content the feature uses, it is copied in: `mannequin` brings the `Characters` pack (`Content/Characters/Mannequins`), which the third person and first person templates already have, and `interactables` and `tour` the `LevelPrototyping` pack. Each feature's Blueprints are in its plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open the plugin's folder, **Plugins > Mannequin Content** for the `mannequin` feature.
 
+The `intro` template is made of all four: `rusteal new MyTour --template intro` adds them by itself, and the Blueprints of its tour level are children of their Rust classes.
+
 An existing project takes a feature as a plugin:
 
 ```bash
