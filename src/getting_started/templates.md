@@ -30,7 +30,7 @@ The engine's templates come with variants, genre starting points that the C++ ve
 | `ar` | | The Handheld AR template on ARCore and ARKit: its pawn (touch gestures to pick a detected plane, place the object on it, move, rotate and scale it; light estimation), plane and placeable actors and its styled menus in Rust. It runs in the editor; Rusteal does not build for Android or iOS yet. |
 | `vr` | | The Virtual Reality template on OpenXR: its pawn (teleport, snap turn, hand poses), grabbable objects, pistol, 3D menu, passthrough and spectator camera in Rust. Play it with **VR Preview**. |
 
-Names are matched loosely (`side-scrolling` or `SideScrolling`), and `rusteal new` with an unknown template or variant lists them all.
+Names are matched loosely (`side-scrolling` or `SideScrolling`), and `rusteal new` with an unknown template or variant lists them all, with the features any template can take (see [Adding features](features.md)).
 
 > **Screenshot:** the third-person template's combat variant in play. *(images/getting_started/template_combat.png)*
 

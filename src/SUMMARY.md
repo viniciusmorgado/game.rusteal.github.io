@@ -10,6 +10,7 @@
 - [Your first project](./getting_started/first_project.md)
 - [Project layout](./getting_started/layout.md)
 - [Starting from a template](./getting_started/templates.md)
+- [Adding features](./getting_started/features.md)
 - [Adding Rusteal to an existing project](./getting_started/existing_project.md)
 - [Versions and upgrades](./getting_started/versions.md)
 

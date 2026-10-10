@@ -26,6 +26,7 @@ rusteal plugin new LevelTools --template editor
 | `blank` | A runtime plugin with a `HelloComponent` in Rust. |
 | `editor` | An editor plugin: an editor subsystem, a **Tools** menu entry that counts the project's assets on a background thread, a console command doing the same, and an asset validator. |
 | `inventory` | A runtime gameplay plugin: items as data assets, an inventory component that stacks them and broadcasts its changes, a world subsystem, project settings for its limits, and console commands that give, take and list the player's items. See [An inventory](../recipes/inventory.md). |
+| `mannequin` | The `mannequin` feature, a mannequin that copies the player's movement. See [Adding features](../getting_started/features.md). |
 
 ## Layout
 

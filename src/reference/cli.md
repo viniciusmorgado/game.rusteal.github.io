@@ -5,10 +5,10 @@ Commands that take `[project]` find the project by walking up from the current d
 ## rusteal new
 
 ```bash
-rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--no-build]
+rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--feature <name>]... [--no-build]
 ```
 
-Creates a project from a template, installs the plugins, writes the Rust workspace and runs the whole build. See [Your first project](../getting_started/first_project.md) and [Starting from a template](../getting_started/templates.md).
+Creates a project from a template, installs the plugins, adds each `--feature` as a plugin, writes the Rust workspace and runs the whole build. See [Your first project](../getting_started/first_project.md), [Starting from a template](../getting_started/templates.md) and [Adding features](../getting_started/features.md).
 
 ## rusteal setup
 
