@@ -10,6 +10,7 @@
 | `FText` | `&str` (as an argument), `String` (as a return value) | |
 | `UObject*`, `TObjectPtr<T>` | `UObjectRef<T>` | a handle; see [Object references](../engine_api/object_refs.md) |
 | `TSubclassOf<T>` | `SubclassOf<T>` | a class |
+| `TScriptInterface<IFoo>` | `ScriptInterface<dyn Foo>` | an object implementing a `#[uinterface]`; `object.interface::<dyn Foo>()` |
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path |
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | |
 | A struct (`FVector`, `FHitResult`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait |

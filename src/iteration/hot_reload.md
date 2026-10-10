@@ -21,6 +21,7 @@ When the build deploys the library, the editor reloads it on its own, and a noti
 | A class's parent, its `implements` or its `config` | The class is created again. |
 | A new `#[uclass]` | The class appears, ready to be placed or derived from. |
 | A Rust-only field (no attribute) | Starts over from its `Default` value, on every reload, changed or not. |
+| A `#[uinterface]`: a function added, removed, signature changed | The interface keeps its class and gets the new functions; the Blueprints implementing or calling it are recompiled, and the Rust classes implementing it are created again. |
 | A `#[ustruct]` | Logged as changed; the struct keeps its old fields until the editor restarts. |
 
 When a class is created again, every object of it moves to the new class: the actors placed in the level, the Blueprint children of the class, and the Rust classes that derive from it. Their property values are kept.
@@ -40,7 +41,7 @@ A field with no attribute is Rust's alone, kept outside the Unreal object, and a
 - A changed `#[ustruct]`: the editor keeps the old struct until it restarts.
 - A change to `rusteal.toml`, or a new engine version: run `rusteal build --all`, then restart the editor.
 - A new Rusteal version after `rusteal upgrade`: restart the editor.
-- Outside the editor (a game started with `-game`), a changed class cannot be replaced: it keeps its old shape, and the log asks for a restart. Function bodies still update.
+- Outside the editor (a game started with `-game`), a changed class or interface cannot be replaced: it keeps its old shape, and the log asks for a restart. Function bodies still update.
 
 ## Reloading by hand
 

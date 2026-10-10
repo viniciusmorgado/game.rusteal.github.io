@@ -13,7 +13,6 @@ What Rusteal does not do yet, and what to do meanwhile.
 
 | Not yet | Meanwhile |
 |---|---|
-| Declaring a new Unreal interface in Rust | Create a Blueprint Interface and implement it from Rust with `implements`; between Rust classes, use a Rust trait. |
 | `TMap` and `TSet` properties | Two `UeArray`s side by side, or a Rust-only `HashMap`. |
 | `String`, arrays and `FName` as `#[ufunction]` parameters | A property the caller sets before the call. |
 | Network replication (`Replicated`, RPCs) | Single player and local multiplayer. |
@@ -24,7 +23,7 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Not yet | Meanwhile |
 |---|---|
 | Reloading a changed `#[ustruct]` | Restart the editor. |
-| Replacing a changed class outside the editor (`-game`) | Restart the game. |
+| Replacing a changed class or interface outside the editor (`-game`) | Restart the game. |
 | Keeping Rust-only fields across a reload | Keep what must survive in `#[uproperty]` fields. |
 
 ## Delegates

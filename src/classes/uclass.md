@@ -89,7 +89,6 @@ The game's classes are in the `/Script/Rusteal` package: `/Script/Rusteal.Barrel
 
 ## What a class cannot do yet
 
-- Declare a new Unreal interface (it can implement existing ones: see [Interfaces](interfaces.md)).
 - Replicate properties or call RPCs over the network: `Replicated` and the RPC specifiers are not accepted yet.
 
 See [Known limits](../reference/limits.md).
