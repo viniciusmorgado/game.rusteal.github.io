@@ -40,6 +40,7 @@
 - [Rust classes deriving from Rust classes](./classes/inheritance.md)
 - [Interfaces](./classes/interfaces.md)
 - [Structs and data tables](./classes/structs.md)
+- [Enums](./classes/enums.md)
 
 # The engine API
 
@@ -69,6 +70,7 @@
 - [Point and click](./recipes/point_and_click.md)
 - [Effects and sound](./recipes/effects.md)
 - [Vehicles](./recipes/vehicles.md)
+- [Virtual reality](./recipes/vr.md)
 - [Game flow](./recipes/game_flow.md)
 - [Saving the game](./recipes/save_game.md)
 - [An inventory](./recipes/inventory.md)

@@ -25,7 +25,9 @@ On a field of a `#[uclass]` or a `#[ustruct]`: the field is an Unreal property.
 | `BlueprintReadOnly` | A Get node in Blueprints. |
 | `SaveGame` | Written by save game archives. |
 | `Config` | Read from and saved to the class's config category. |
-| `default = value` | The default value, for scalars and enums (not in a `#[ustruct]`). |
+| `BindWidget` | On a `UserWidget` class: the widget of the same name in the Widget Blueprint's layout, which must have one. |
+| `BindWidgetOptional` | The same, when the layout may leave it out. |
+| `default = value` | The default value, for scalars, engine enums and `#[uenum]`s (not in a `#[ustruct]`). |
 | `name = "Name"` | The Unreal name. |
 | `category = "Category"` | The category in the Details panel; `"A|B"` for a subcategory. |
 
@@ -78,6 +80,10 @@ On a method in a `#[uclass_impl]` block, returning `RustealResult<()>` or nothin
 ## `#[ustruct]`
 
 On a struct whose fields are all `#[uproperty]`: an Unreal struct, with a `<Name>Ext` trait of getters and setters. See [Structs and data tables](../classes/structs.md).
+
+## `#[uenum]`
+
+On an enum whose variants carry no data: an Unreal enum, usable in Blueprints, with values up to 254. See [Enums](../classes/enums.md).
 
 ## Macros
 

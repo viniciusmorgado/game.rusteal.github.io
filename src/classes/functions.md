@@ -33,7 +33,7 @@ A method marked `#[ufunction]` is a real Unreal function of the class. It is `Bl
 
 ## Parameters and return values
 
-A function takes scalars (`bool`, `u8`, `i32`, `i64`, `f32`, `f64`), objects (`UObjectRef<T>`), classes (`SubclassOf<T>`) and structs (`UStructRef<T>`, a reference into the call's parameters; `to_owned()` keeps a copy), and returns a scalar, an object or a class. A `BlueprintImplementableEvent` takes structs as `&OwnedStruct<T>`.
+A function takes scalars (`bool`, `u8`, `i32`, `i64`, `f32`, `f64`), enums (engine enums and [`#[uenum]`s](enums.md)), objects (`UObjectRef<T>`), classes (`SubclassOf<T>`) and structs (`UStructRef<T>`, a reference into the call's parameters; `to_owned()` keeps a copy), and returns a scalar, an enum, an object or a class. A `BlueprintImplementableEvent` takes structs as `&OwnedStruct<T>`. An `Override` of an engine event that returns a struct, such as an input modifier's `ModifyRaw`, returns an `OwnedStruct<T>`.
 
 Strings and arrays are not function parameters yet. A Blueprint that needs to pass text to Rust can set a `String` property and call a function that reads it.
 

@@ -159,6 +159,61 @@ impl Enemy {
 
 The Blueprint child sets the **Widget Class** of the **Life Bar** component to a Widget Blueprint whose parent is `LifeBar`, and its **Space** to **Screen**. Updating it is `LifeBar::from_obj(self.life_bar_widget())?.set_life_percentage(hp / max_hp)`.
 
+## Use case: the buttons of a Widget Blueprint
+
+**The goal:** a menu whose layout a designer draws in the UMG designer, and whose buttons run Rust functions.
+
+```rust
+use bindings::umg::{Button, ButtonExt, UserWidget};
+
+#[uclass(parent = UserWidget)]
+pub struct MenuWidget {
+    #[uproperty(BindWidget, BlueprintReadOnly)]
+    restart_button: UObjectRef<Button>,
+
+    #[uproperty(BindWidget, BlueprintReadOnly)]
+    exit_button: UObjectRef<Button>,
+}
+
+#[uclass_impl]
+impl MenuWidget {
+    #[ufunction(Override)]
+    fn construct(&mut self) {
+        let me = self.as_ref().upcast_to::<UserWidget>();
+
+        for (button, handler) in [(self.restart_button(), "Restart"), (self.exit_button(), "Exit")] {
+            if let Ok(button) = button.checked() {
+                let _ = button.on_clicked().add_ufunction(&me, handler);
+            }
+        }
+    }
+
+    #[ufunction(BlueprintCallable)]
+    pub fn restart(&mut self) {
+        let me = self.as_ref();
+        let level = GameplayStatics::get_current_level_name(me.upcast_to(), Some(true));
+        GameplayStatics::open_level(me.upcast_to(), FName::new(&level).handle(), Some(true), None);
+    }
+
+    #[ufunction(BlueprintCallable)]
+    pub fn exit(&mut self) {
+        KismetSystemLibrary::quit_game(self.as_ref().upcast_to(), UObjectRef::null(), EQuitPreference::Quit, false);
+    }
+}
+```
+
+A `BindWidget` property is C++'s `UPROPERTY(meta = (BindWidget))`: when the widget is created, it holds the layout's widget of the same name (`RestartButton` for `restart_button`). The Widget Blueprint must have it, with that name and a compatible class, or it does not compile; `BindWidgetOptional` lets the layout leave it out, and the property is then null.
+
+### In the editor
+
+1. Create a **Widget Blueprint** whose parent is **MenuWidget**, or open an existing one, click **Class Settings** and set **Parent Class** to **MenuWidget**.
+2. In the **Designer**, add two **Button**s and name them `RestartButton` and `ExitButton` in the **Details** panel.
+3. Click **Compile**. A missing or misnamed button is reported by the compiler.
+
+> **Screenshot:** the UMG designer with RestartButton and ExitButton, and the compiler results naming a missing BindWidget. *(images/recipes/bind_widget.png)*
+
+Template: `vr` (the 3D menu).
+
 ## Use case: drawing on the HUD
 
 **The goal:** a selection box drawn while dragging the mouse.

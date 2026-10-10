@@ -131,7 +131,7 @@ movement.set_nav_agent_props(&nav);
 
 ## Enums
 
-Engine enums are Rust enums with the C++ names: `ECollisionChannel::ECC_Pawn`, `ETriggerEvent::Triggered`, `EAttachmentRule::SnapToTarget`. Events receive some enums as their `u8` value (`receive_end_play(&mut self, end_play_reason: u8)`).
+Engine enums are Rust enums with the C++ names: `ECollisionChannel::ECC_Pawn`, `ETriggerEvent::Triggered`, `EAttachmentRule::SnapToTarget`. Events receive some enums as their `u8` value (`receive_end_play(&mut self, end_play_reason: u8)`). Your own enums are declared with `#[uenum]`; see [Enums](../classes/enums.md).
 
 ## Functions that are not in the bindings
 

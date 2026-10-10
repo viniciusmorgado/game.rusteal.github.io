@@ -14,6 +14,7 @@
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | |
 | A struct (`FVector`, `FHitResult`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait |
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |
+| Your enum | a `#[uenum]` | |
 | `TArray<T>` | `UeArray<T>` (a property), `Vec<T>` or `&[T]` (engine arguments and returns) | |
 | `TMap<K, V>` | `UeMap<K, V>` | engine properties only |
 | `TSet<T>` | `UeSet<T>` | engine properties only |

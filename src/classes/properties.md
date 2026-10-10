@@ -110,7 +110,7 @@ The Unreal name is what Blueprints, ini files, data tables and editor Python see
 | `bool`, `u8`, `i32`, `i64`, `f32`, `f64` | `bool`, `uint8`, `int32`, `int64`, `float`, `double` |
 | `String` | `FString` |
 | `FName` | `FName` |
-| An engine enum (`ECollisionChannel`, `ETraceTypeQuery`...) | that enum |
+| An engine enum (`ECollisionChannel`, `ETraceTypeQuery`...) or a `#[uenum]` of yours | that enum |
 | `UObjectRef<T>` | `TObjectPtr<T>`: an object or an asset |
 | `SubclassOf<T>` | `TSubclassOf<T>`: a class, such as a Blueprint to spawn |
 | `SoftObjectRef<T>` | `TSoftObjectPtr<T>`: an asset by path, loaded on demand |

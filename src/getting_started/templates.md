@@ -7,7 +7,7 @@ rusteal new MyGame --template third-person
 rusteal new MyGame --template third-person --variant combat
 ```
 
-A template is one of the engine's C++ templates with its gameplay written in Rust. The C++ classes are gone, the Rust crate in `Rust/` takes their place, and their Blueprint children, with the same names, have Rust parents. Open the project and press **Play**: it plays like the engine's template.
+A template is one of the engine's templates with its gameplay written in Rust. The C++ classes are gone, the Rust crate in `Rust/` takes their place, and their Blueprint children, with the same names, have Rust parents. The engine's Blueprint-only templates (`vr`) keep their Blueprints, reparented to Rust classes and holding only data: meshes, materials, effects, input assets, widget layouts and Anim Blueprint graphs. Open the project and press **Play**: it plays like the engine's template.
 
 The engine's templates come with variants, genre starting points that the C++ version puts all in one project. In Rusteal each variant is its own project: `--variant` picks one, and without it the project is the template alone. A variant project opens on the variant's level.
 
@@ -27,6 +27,7 @@ The engine's templates come with variants, genre starting points that the C++ ve
 | `vehicle` | | The Vehicle template: a sports car and an offroad car on Chaos Vehicles, their game mode, player controller and speed and gear HUD in Rust (keyboard, gamepad, steering wheel, touch). |
 | `vehicle` | `offroad` | The offroad car on an offroad level, its game mode ready for local split screen players. |
 | `vehicle` | `time-trial` | A race track with a start countdown, gates to pass in order, laps and the best lap time. |
+| `vr` | | The Virtual Reality template on OpenXR: its pawn (teleport, snap turn, hand poses), grabbable objects, pistol, 3D menu, passthrough and spectator camera in Rust. Play it with **VR Preview**. |
 
 Names are matched loosely (`side-scrolling` or `SideScrolling`), and `rusteal new` with an unknown template or variant lists them all.
 

@@ -126,3 +126,79 @@ fn has_double_jumped(&self) -> bool {
 ```
 
 In the Animation Blueprint's **Event Graph**, cast **Try Get Pawn Owner** to the character's class, call **Has Double Jumped** on it, and store the result in a variable the **AnimGraph** uses.
+
+## Use case: the Animation Blueprint's logic in Rust
+
+**The goal:** the logic of an Animation Blueprint's **Event Graph** (reading the owner, easing values toward their targets) in Rust, and the **AnimGraph** left to the Animation Blueprint, which reads the values the Rust class keeps.
+
+The Rust class is the Animation Blueprint's parent, an `AnimInstance`:
+
+```rust
+use bindings::engine::{AnimInstance, AnimInstanceExt, SkeletalMeshComponent};
+
+#[uclass(parent = SkeletalMeshComponent)]
+pub struct MannequinsXR {
+    #[uproperty(EditAnywhere, BlueprintReadWrite, category = "Hand", default = false)]
+    b_mirror: bool,
+}
+
+#[uclass(parent = AnimInstance)]
+pub struct HandAnimInstance {
+    #[uproperty(BlueprintReadWrite, category = "Pose", default = 0.0)]
+    pose_alpha_point: f32,
+
+    #[uproperty(BlueprintReadOnly, category = "Pose", default = 0.0)]
+    current_pose_alpha_point: f64,
+
+    #[uproperty(BlueprintReadOnly, category = "Pose", default = false)]
+    b_mirror: bool,
+}
+
+#[uclass_impl]
+impl HandAnimInstance {
+    #[ufunction(Override)]
+    fn blueprint_initialize_animation(&mut self) {
+        let mirror = self
+            .as_ref()
+            .checked()
+            .ok()
+            .and_then(|anim| MannequinsXR::from_obj(anim.get_owning_component()).ok())
+            .is_some_and(|hand| hand.b_mirror());
+
+        self.set_b_mirror(mirror);
+    }
+
+    #[ufunction(Override)]
+    fn blueprint_update_animation(&mut self, delta_time_x: f32) {
+        self.set_current_pose_alpha_point(model::f_interp_to(
+            self.current_pose_alpha_point(),
+            f64::from(self.pose_alpha_point()),
+            f64::from(delta_time_x),
+            13.0,
+        ));
+    }
+}
+```
+
+`blueprint_initialize_animation` runs once, when the mesh creates the instance; `blueprint_update_animation` every animation update, on the game thread, with the frame's time. What the AnimGraph reads are the Rust properties, `BlueprintReadOnly` or `BlueprintReadWrite`. The pawn sets the targets on the instance its hand mesh has:
+
+```rust
+let anim = hand.checked()?.get_anim_instance();
+
+if let Ok(mut hand_anim) = HandAnimInstance::from_obj(anim) {
+    hand_anim.set_pose_alpha_point(1.0);
+}
+```
+
+### In the editor
+
+1. Open the Animation Blueprint (`ABP_MannequinsXR`), and in the toolbar click **Class Settings**.
+2. In the **Details** panel, set **Parent Class** to **HandAnimInstance**.
+3. In the **My Blueprint** panel, **Variables** lists the Rust properties under **Pose**; drag **Current Pose Alpha Point** into the **AnimGraph** and connect it where the old variable was.
+4. Delete the old variables and the **Event Graph** nodes the Rust class replaces, then click **Compile**.
+
+> **Screenshot:** the AnimGraph of ABP_MannequinsXR, with Current Pose Alpha Point coming from the Rust parent. *(images/recipes/anim_rust_parent.png)*
+
+The variable types follow the Blueprint's: a Blueprint **Float** that is double precision is `f64`, one stored in single precision is `f32`. When they match, the AnimGraph's nodes take the Rust property in place of a variable of the same name.
+
+Template: `vr`.
