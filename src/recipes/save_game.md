@@ -30,7 +30,7 @@ pub fn save_progress(level: i32) -> RustealResult<()> {
     progress.set_unlocked_level(level);
 
     if !GameplayStatics::save_game_to_slot(save, SLOT, 0) {
-        return Err(RustealError::InvalidOperation("the save failed".into()));
+        return Err(RustealError::invalid_operation("the save failed"));
     }
 
     Ok(())

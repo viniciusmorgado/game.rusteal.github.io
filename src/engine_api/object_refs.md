@@ -13,8 +13,8 @@ let target: UObjectRef<Actor> = self.current_target();
 | Method | What it does |
 |---|---|
 | `is_valid()` | Whether the handle points to an object (it can still be pending destruction). |
-| `checked()` | Verifies the object is alive and gives access to its functions, or `Err(ObjectDestroyed)`. |
-| `cast::<U>()` | The same object as class `U`, checked at runtime, or `Err(InvalidCast)`. |
+| `checked()` | Verifies the object is alive and gives access to its functions, or an `ObjectDestroyed` error. |
+| `cast::<U>()` | The same object as class `U`, checked at runtime, or an `InvalidCast` error naming the object and the class expected. |
 | `upcast_to::<U>()` | The same object as an ancestor class `U`, checked at compile time. |
 | `is_a::<U>()` | Whether the object is of class `U` or derives from it. |
 | `get_name()` | The object's name. |

@@ -2,41 +2,95 @@
 
 The engine fails in ways C++ code tends to crash on: an object destroyed while something still points to it, a cast to the wrong class, a function that is not there. In Rusteal those failures are values: `RustealResult<T>`, an alias of `Result<T, RustealError>`.
 
-| Error | When |
-|---|---|
-| `ObjectDestroyed` | `checked()` on an object that is gone or was never set. |
-| `InvalidCast` | `cast` or `from_obj` to a class the object is not. |
-| `NullArgument` | A null class or object where one is required (an unset `SubclassOf` given to `spawn_actor_of_class`). |
-| `FunctionNotFound(name)` | A function bound or called by a name the class does not have. |
-| `PropertyNotFound(name)` | A property reached by a name the class does not have. |
-| `TypeMismatch` | A value of the wrong type for a property or parameter. |
-| `IndexOutOfRange` | An array index past the end. |
-| `InvalidOperation(message)` | An engine call that refused: a spawn that failed, an asset that could not be loaded. |
-| `Internal(message)` | Something Rusteal itself did not expect. |
+## What an error says
 
-`RustealError` implements `Display` and `std::error::Error`: log it with `{e}`, or convert it into the error type of your own code.
+A `RustealError` says what went wrong, on which Unreal object, and where in your Rust code:
 
-## The pattern: Result inside, log at the edge
+```text
+invalid cast: expected Pawn (object StaticMeshActor_0 of class StaticMeshActor)
+    at my-game/src/turret.rs:42:23
+while aiming at the target
+    at my-game/src/turret.rs:30:14
+```
+
+- **What**: its kind, and the name involved (the property, the function, the class a cast expected).
+- **On what**: the object's name and its class, when the error came from an object.
+- **Where**: the file and line of the call that failed in your code, not inside Rusteal: the functions that return a `RustealResult` pass their caller's location along.
+- **While doing what**: the contexts your code added on the way up (below).
+- **Caused by**: the error underneath, when it came from another library (a file that did not open, a number that did not parse).
+
+It prints three ways:
+
+| Format | Gives | For |
+|---|---|---|
+| `{e}` | One line: the contexts, then the error, then the object. | Logs, UI, `to_string()`. |
+| `{e:#}` | The same line, then the causes and the location. | A log line with everything. |
+| `{e:?}` | The report above, one item per line. | Debugging; it is also what `unwrap()` prints when it panics. |
+
+`e.log(LOG_WARNING)` writes the report to the Output Log.
+
+## Use case: Result inside, log at the edge
+
+**The goal:** a turret's setup can fail in several ways, and the log says which, where and on what.
 
 Events and functions the engine calls cannot return an error to anyone. Put the work in a method that returns `RustealResult`, use `?` in it, and log the error in the event:
 
 ```rust
+use rusteal_runtime::runtime::{ErrorContext, LOG_WARNING, RustealResult};
+
 #[ufunction(Override)]
 fn receive_begin_play(&mut self) {
     if let Err(e) = self.setup() {
-        ulog!(LOG_WARNING, "[MyGame] {} setup failed: {e}", self.as_ref().get_name().unwrap_or_default());
+        e.log(LOG_WARNING);
     }
 }
 
 impl Turret {
     fn setup(&mut self) -> RustealResult<()> {
-        let me = self.as_ref().checked()?;
         let mesh = self.mesh()?.checked()?;
-        let world = self.as_ref().get_world()?;
+        let target = self.target().cast::<Pawn>().context("aiming at the target")?;
+        let range: f32 = self.range_text().parse().context("reading the range")?;
         Ok(())
     }
 }
 ```
+
+`.context("...")` adds what the code was doing to the error, with its own line; contexts read outermost first in `{e}`. It works on any `Result` whose error is a Rust error (a `RustealError`, an `std::io::Error`, a `serde_json::Error`...), and on `Option`, where `None` becomes an error with that message:
+
+```rust
+let spawn = self.find_spawn_point().context("no spawn point in the level")?;
+```
+
+## Errors from other libraries
+
+`?` turns the standard library's errors (`std::io::Error`, `ParseIntError`, `ParseFloatError`, `Utf8Error`...) into a `RustealError` by itself, keeping them as the cause and recording the line of the `?`. Another crate's error goes through `.context("...")`, or `.map_err(RustealError::other)` with no context.
+
+`RustealError` implements `std::error::Error`, so it goes the other way too: into `anyhow::Error`, a `Box<dyn Error>`, or a `thiserror` enum of your own.
+
+## Telling errors apart
+
+`kind()` gives an `ErrorKind` to match on:
+
+```rust
+match other_actor.cast::<Character>() {
+    Ok(character) => self.hit(character),
+    Err(e) if e.is(ErrorKind::InvalidCast) => {}
+    Err(e) => return Err(e),
+}
+```
+
+| `ErrorKind` | When |
+|---|---|
+| `ObjectDestroyed` | `checked()` on an object that is gone or was never set. |
+| `InvalidCast` | `cast` or `from_obj` to a class the object is not. |
+| `NullArgument` | A null class or object where one is required (an unset `SubclassOf` given to `spawn_actor_of_class`). |
+| `FunctionNotFound` | A function bound or called by a name the class does not have. |
+| `PropertyNotFound` | A property or a parameter reached by a name the class or the function does not have. |
+| `TypeMismatch` | A value of the wrong type for a property or parameter. |
+| `IndexOutOfRange` | An array index past the end. |
+| `InvalidOperation` | An engine call that refused: a spawn that failed, an asset that could not be loaded. |
+| `Internal` | Something Rusteal itself did not expect. |
+| `Other` | An error of your own, or from another library. |
 
 Where a failure is a normal case (no target, the player is not a character), `let else` or `if let` say it without an error:
 
@@ -45,6 +99,25 @@ let Ok(character) = other_actor.cast::<Character>() else {
     return;
 };
 ```
+
+## Your own errors
+
+```rust
+use rusteal_runtime::runtime::{ErrorKind, RustealResult, bail, ensure};
+
+fn spend(&mut self, cost: i32) -> RustealResult<()> {
+    ensure!(cost >= 0, "a cost of {cost}");
+
+    if cost > self.gold() {
+        bail!(ErrorKind::InvalidOperation, "{cost} gold, {} in the purse", self.gold());
+    }
+
+    self.set_gold(self.gold() - cost);
+    Ok(())
+}
+```
+
+`bail!` returns an error with a message, of the kind given first or `Other` without one; `ensure!` does when its condition is false. `RustealError::msg("...")`, `RustealError::with_message(kind, "...")` and the constructors named after each kind (`RustealError::null_argument()`, `RustealError::invalid_operation("...")`) make one to return yourself, and `.on(&actor)` names the object it concerns.
 
 ## Panics
 
