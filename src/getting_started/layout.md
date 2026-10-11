@@ -35,7 +35,7 @@ resolver = "3"
 rusteal-runtime = "=x.y.z"
 rusteal-core = "=x.y.z"
 rusteal-ffi = "=x.y.z"
-glam = "0.33"
+glam = "0.34"
 ```
 
 It also holds the build profiles, which only a workspace's `Cargo.toml` can set. See [Development and release builds](../cli/profiles.md).
