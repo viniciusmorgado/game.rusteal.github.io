@@ -35,7 +35,7 @@ It prints three ways:
 A reported error goes to two places:
 
 - the **Output Log**, as the report above, followed by the Blueprint call stack when a Blueprint was running;
-- the **Rusteal** tab of the **Message Log** (*Window > Message Log*, then **Rusteal** in its list), one line per error. Its object is a link that selects it, and its Rust file and line are a link that opens the file at that line in the IDE set in *Editor Preferences > General > Source Code*. An error also shows a notification, at most once every few seconds.
+- the **Rusteal** tab of the **Message Log** (*Window > Message Log*, then **Rusteal** in its list), one line per error. Its object is a link that selects it; an object of Play In Editor, once Play has stopped, selects the same actor in the level. Its Rust file and line are a link that opens the file at that line in the IDE set in *Editor Preferences > General > Source Code*. An error also shows a notification, at most once every few seconds.
 
 > **Screenshot:** the Message Log's Rusteal tab with an invalid cast error, its object link and its errors.rs:42 link. *(images/engine_api/message_log.png)*
 
