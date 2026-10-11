@@ -63,7 +63,21 @@ if let Ok(projectile) = Projectile::from_obj(spawned) {
 }
 ```
 
-The fifth argument is the owner. The collision handling method decides what happens when the spawn point is blocked:
+The fifth argument is the owner. The same, with the world and typed parameters:
+
+```rust
+let params = SpawnParams {
+    owner: Some(me.as_ref().upcast_to()),
+    instigator: Some(pawn),
+    collision: SpawnCollisionMethod::AlwaysSpawn,
+};
+
+let projectile = world.spawn_actor_deferred_of_class(self.projectile_class(), &transform, params)?;
+Projectile::from_obj(projectile)?.set_damage(self.damage());
+world.finish_spawning(&projectile.upcast_to(), &transform)?;
+```
+
+`spawn_actor_deferred_of_class` returns the actor already typed as the class's `T`; `SpawnParams::default()` has no owner, no instigator and the class's own collision handling. The collision handling method decides what happens when the spawn point is blocked:
 
 | Method | What happens |
 |---|---|

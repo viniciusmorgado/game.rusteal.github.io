@@ -9,10 +9,10 @@ use bindings::ai::{AIBlueprintHelperLibrary, PathFollowingComponent};
 use bindings::core_ue::EMouseCursor;
 use bindings::engine::{
     ControllerExt, ETraceTypeQuery, FHitResultExt, GameplayStatics, PawnExt, PlayerController,
-    PlayerControllerExt,
+    PlayerControllerExt
 };
 use bindings::enhanced_input::{
-    ETriggerEvent, EnhancedInputLocalPlayerSubsystemExt, InputAction, InputMappingContext,
+    ETriggerEvent, EnhancedInputLocalPlayerSubsystemExt, InputAction, InputMappingContext
 };
 
 #[uclass(parent = PlayerController)]
@@ -46,7 +46,7 @@ impl ClickController {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
         if let Err(e) = self.setup_input() {
-            ulog!(LOG_WARNING, "[MyGame] input setup failed: {e}");
+            log::warn!("[MyGame] input setup failed: {e}");
         }
     }
 

@@ -44,7 +44,7 @@ impl CoinGameMode {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
         if let Err(e) = self.create_user_interface() {
-            ulog!(LOG_WARNING, "[MyGame] UI: {e}");
+            log::warn!("[MyGame] UI: {e}");
         }
     }
 }

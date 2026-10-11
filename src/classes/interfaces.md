@@ -45,7 +45,7 @@ impl Interactable for Door {
     }
 
     fn highlight(&mut self, on: bool) {
-        ulog!(LOG_DISPLAY, "Door highlighted: {on}");
+        log::info!("Door highlighted: {on}");
     }
 }
 ```

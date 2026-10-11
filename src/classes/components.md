@@ -5,7 +5,7 @@
 ```rust
 use bindings::engine::{
     BoxComponent, CameraComponent, ProjectileMovementComponent, SceneComponent,
-    SpringArmComponent, StaticMeshComponent,
+    SpringArmComponent, StaticMeshComponent
 };
 use rusteal_runtime::{uclass, uclass_impl};
 

@@ -167,7 +167,7 @@ impl GuardController {
     #[ufunction(Override)]
     fn receive_possess(&mut self, _possessed_pawn: UObjectRef<Pawn>) {
         if let Err(e) = self.bind_perception() {
-            ulog!(LOG_WARNING, "[MyGame] AI perception: {e}");
+            log::warn!("[MyGame] AI perception: {e}");
         }
     }
 }

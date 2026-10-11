@@ -35,7 +35,6 @@ mod hello;
 
 ```rust
 use bindings::prelude::*;
-use rusteal_runtime::runtime::{LOG_DISPLAY, ulog};
 use rusteal_runtime::{uclass, uclass_impl};
 
 #[uclass(parent = Actor)]
@@ -45,7 +44,7 @@ pub struct HelloActor {}
 impl HelloActor {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
-        ulog!(LOG_DISPLAY, "[MyGame] Hello from Rust");
+        log::info!("[MyGame] Hello from Rust");
     }
 }
 ```
@@ -53,7 +52,7 @@ impl HelloActor {
 - `#[uclass(parent = Actor)]` makes `HelloActor` an Unreal class whose parent is `AActor`.
 - `#[uclass_impl]` marks the block where its Unreal functions are.
 - `#[ufunction(Override)]` on `receive_begin_play` implements the engine's `ReceiveBeginPlay` event, the one a Blueprint's **Event BeginPlay** node implements.
-- `ulog!` writes to the Output Log.
+- `log::info!` writes to the Output Log (see [Logging](../iteration/logging.md)).
 
 ## In the editor
 

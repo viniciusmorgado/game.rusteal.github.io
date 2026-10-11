@@ -55,6 +55,8 @@ let world_context = self.as_ref().upcast_to();
 let player = GameplayStatics::get_player_pawn(world_context, 0);
 ```
 
+An object's class and outer come typed as well: `actor.class()?` is a `SubclassOf<T>` of the reference's own type, and `component.outer::<Actor>()?` is the outer, checked to be an actor.
+
 For your own Rust classes, `MyClass::from_obj(reference)` does the cast and gives the Rust class with its getters and methods. See [Declaring a class](../classes/uclass.md).
 
 ## Keeping an object alive

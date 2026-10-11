@@ -9,7 +9,7 @@ use bindings::engine::{
     Character, DamageType, ECollisionEnabled, ECollisionResponse, FHitResult, FHitResultExt,
     GameplayStatics, PawnExt, PrimitiveComponent, PrimitiveComponentExt,
     ProjectileMovementComponent, ProjectileMovementComponentExt, SphereComponent,
-    SphereComponentExt,
+    SphereComponentExt
 };
 
 #[uclass(parent = Actor)]

@@ -41,7 +41,7 @@ impl LevelToolsSubsystem {
     #[ufunction(Override)]
     fn receive_initialize(&mut self) {
         if let Err(e) = self.add_menu_entry() {
-            ulog!(LOG_WARNING, "[LevelTools] no menu entry: {e}");
+            log::warn!("[LevelTools] no menu entry: {e}");
         }
     }
 
@@ -89,7 +89,7 @@ pub fn count_assets(path: &str) {
     let assets = match editor_subsystem::<EditorAssetSubsystem>().and_then(|s| s.checked()) {
         Ok(subsystem) => subsystem.list_assets(path, Some(true), Some(false)),
         Err(e) => {
-            ulog!(LOG_ERROR, "[LevelTools] no asset subsystem: {e}");
+            log::error!("[LevelTools] no asset subsystem: {e}");
             return;
         }
     };
@@ -109,10 +109,10 @@ pub fn count_assets(path: &str) {
             (assets.len(), by_prefix)
         },
         move |(total, by_prefix)| {
-            ulog!(LOG_DISPLAY, "[LevelTools] {total} assets under {path}");
+            log::info!("[LevelTools] {total} assets under {path}");
 
             for (prefix, count) in by_prefix {
-                ulog!(LOG_DISPLAY, "[LevelTools]   {prefix}: {count}");
+                log::info!("[LevelTools]   {prefix}: {count}");
             }
         },
     );
@@ -126,12 +126,15 @@ The editor's own subsystems (`EditorActorSubsystem`, `EditorAssetSubsystem`, `Le
 ```rust
 use bindings::editor_subsystem::EditorSubsystem;
 use bindings::unreal_ed::EditorSubsystemBlueprintLibrary;
+use rusteal_runtime::runtime::{Inherits, RustealResult, SubclassOf, UObjectRef, UeClass};
 
-pub fn editor_subsystem<T: UeClass>() -> RustealResult<UObjectRef<T>> {
-    let class = unsafe { SubclassOf::<EditorSubsystem>::from_raw(T::static_class()) };
+pub fn editor_subsystem<T: UeClass + Inherits<EditorSubsystem>>() -> RustealResult<UObjectRef<T>> {
+    let class = SubclassOf::<T>::base().upcast_to::<EditorSubsystem>();
     EditorSubsystemBlueprintLibrary::get_editor_subsystem(class).cast::<T>()
 }
 ```
+
+`SubclassOf::<T>::base()` is `T`'s class, and `upcast_to` passes it where a parent's class is expected; the `Inherits` bound lets the compiler check that `T` is an editor subsystem.
 
 ## Use case: validating assets on save
 

@@ -47,7 +47,7 @@ A smoother camera adds lag: `boom.set_enable_camera_lag(true)` and `boom.set_cam
 ```rust
 use bindings::engine::{
     CameraComponent, CameraComponentExt, EFirstPersonPrimitiveType, PrimitiveComponentExt,
-    SceneComponentExt, SkeletalMeshComponent,
+    SceneComponentExt, SkeletalMeshComponent
 };
 
 #[uclass(parent = Character)]

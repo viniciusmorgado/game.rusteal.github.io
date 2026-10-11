@@ -16,7 +16,14 @@ let mesh: UObjectRef<StaticMesh> = load_object("/Game/Props/SM_Crate.SM_Crate")?
 let cube: UObjectRef<StaticMesh> = load_object("/Engine/BasicShapes/Cube")?;
 ```
 
-`load_object` loads the asset if it is not loaded yet, and returns an error if there is none at that path. `find_object` finds it only if it is already loaded. The path is the asset's object path, which **Copy Reference** in the **Content Browser**'s right-click menu puts on the clipboard.
+A class, a Blueprint's included, loads with `load_class`, checked against the class it must derive from:
+
+```rust
+let class: SubclassOf<AnimInstance> = load_class("/Game/Characters/ABP_Hero.ABP_Hero_C")?;
+mesh.set_anim_instance_class(class.upcast_to());
+```
+
+A Blueprint's class path ends in `_C`. `load_object` loads the asset if it is not loaded yet, and returns an error if there is none at that path. `find_object` finds it only if it is already loaded. The path is the asset's object path, which **Copy Reference** in the **Content Browser**'s right-click menu puts on the clipboard.
 
 An asset that only `load_object` uses is not found by the cooker, because nothing references it: list its directory in **Project Settings > Packaging > Additional Asset Directories to Cook**, or the packaged game will not have it. See [Packaging a game](../shipping/packaging.md).
 

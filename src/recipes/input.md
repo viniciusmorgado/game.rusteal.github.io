@@ -14,7 +14,7 @@ Input in Rusteal works as in the engine's C++ templates:
 use bindings::engine::{ControllerExt, PlayerController};
 use bindings::enhanced_input::{EnhancedInputLocalPlayerSubsystemExt, InputMappingContext};
 use bindings::prelude::*;
-use rusteal_runtime::runtime::{LOG_WARNING, OwnedStruct, RustealResult, UObjectRef, UeArray, ulog};
+use rusteal_runtime::runtime::{OwnedStruct, RustealResult, UObjectRef, UeArray };
 use rusteal_runtime::{uclass, uclass_impl};
 
 #[uclass(parent = PlayerController)]
@@ -28,7 +28,7 @@ impl MyPlayerController {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
         if let Err(e) = self.add_mapping_contexts() {
-            ulog!(LOG_WARNING, "[MyGame] input mapping contexts failed: {e}");
+            log::warn!("[MyGame] input mapping contexts failed: {e}");
         }
     }
 }
@@ -58,11 +58,11 @@ impl MyPlayerController {
 
 ```rust
 use bindings::engine::{
-    Character, CharacterExt, CharacterMovementComponentExt, ControllerExt, PawnExt,
+    Character, CharacterExt, CharacterMovementComponentExt, ControllerExt, PawnExt
 };
 use bindings::enhanced_input::{ETriggerEvent, FInputActionValue, InputAction};
 use bindings::prelude::*;
-use rusteal_runtime::runtime::{LOG_WARNING, RustealResult, UObjectRef, UStructRef, ulog};
+use rusteal_runtime::runtime::{RustealResult, UObjectRef, UStructRef };
 use rusteal_runtime::{uclass, uclass_impl};
 
 #[uclass(parent = Character)]
@@ -82,7 +82,7 @@ impl MyCharacter {
     #[ufunction(Override)]
     fn receive_restarted(&mut self) {
         if let Err(e) = self.bind_input() {
-            ulog!(LOG_WARNING, "[MyGame] input binding failed: {e}");
+            log::warn!("[MyGame] input binding failed: {e}");
         }
     }
 

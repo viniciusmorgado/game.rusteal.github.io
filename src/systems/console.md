@@ -7,37 +7,41 @@ The console is a game's quickest debugging tool: commands to give items, skip wa
 **The goal:** `mygame.give_gold 500` in the console gives the player gold.
 
 ```rust
-use rusteal_runtime::runtime::{LOG_DISPLAY, LOG_ERROR, UObjectHandle, UObjectRef, console, ulog};
+use bindings::core_ue::Object;
+use bindings::engine::{GameplayStatics, World};
+use bindings::prelude::*;
+use rusteal_runtime::runtime::{CommandContext, RustealResult, UObjectRef, console};
 
 fn startup() {
-    let result = console::register_command("mygame.give_gold", "mygame.give_gold <amount>", |args, world| {
-        let amount: i32 = args.first().and_then(|a| a.parse().ok()).unwrap_or(100);
-        ulog!(LOG_DISPLAY, "[MyGame] giving {amount} gold");
-        give_gold(world, amount);
-    });
+    let result = console::register_command(
+        "mygame.give_gold",
+        "mygame.give_gold <amount>",
+        |args, context| {
+            let amount: i32 = args.first().and_then(|a| a.parse().ok()).unwrap_or(100);
+
+            if let Err(e) = give_gold(context, amount) {
+                log::error!("[MyGame] give_gold: {e}");
+            }
+        },
+    );
 
     if let Err(e) = result {
-        ulog!(LOG_ERROR, "[MyGame] no console command: {e}");
+        log::error!("[MyGame] no console command: {e}");
     }
 }
 
 rusteal_runtime::on_load!(startup);
 
-fn give_gold(world: UObjectHandle, amount: i32) {
+fn give_gold(context: &CommandContext, amount: i32) -> RustealResult<()> {
+    let world: UObjectRef<World> = context.world()?;
+    let pawn = GameplayStatics::get_player_pawn(world.upcast_to::<Object>(), 0);
+    log::info!("[MyGame] giving {amount} gold to {}", pawn.get_name()?);
+    Ok(())
 }
 ```
 
-- `console::register_command(name, help, closure)` adds the command. The closure receives the words after the command (`["500"]`) and the world the command runs in.
+- `console::register_command(name, help, closure)` adds the command. The closure receives the words after the command (`["500"]`) and a `CommandContext`, whose `world()` gives the world the command runs in, typed and checked: an error when the command runs with no world.
 - `on_load!(function)` runs a function every time the library loads, hot reloads included. A library's commands and variables are removed when it unloads and registered again when it loads, so they always run the current code.
-
-The world arrives as a raw handle; turn it into a reference to use it:
-
-```rust
-use bindings::engine::{GameplayStatics, World};
-
-let world = unsafe { UObjectRef::<World>::from_raw(world) }.upcast_to::<Object>();
-let pawn = GameplayStatics::get_player_pawn(world, 0);
-```
 
 ## Use case: a console variable
 

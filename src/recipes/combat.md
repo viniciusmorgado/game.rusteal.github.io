@@ -74,7 +74,7 @@ For damage in an area, `GameplayStatics::apply_radial_damage` damages every acto
 ```rust
 use bindings::engine::{
     CharacterExt, CharacterMovementComponentExt, ECollisionEnabled, KismetSystemLibrary,
-    MovementComponentExt, PrimitiveComponentExt,
+    MovementComponentExt, PrimitiveComponentExt
 };
 
 impl Soldier {
@@ -132,14 +132,14 @@ impl SoldierController {
                 if let Ok(mut me) = SoldierController::from_obj(controller)
                     && let Err(e) = me.respawn()
                 {
-                    ulog!(LOG_WARNING, "[MyGame] respawn failed: {e}");
+                    log::warn!("[MyGame] respawn failed: {e}");
                 }
             })
         });
 
         match bound {
             Ok(binding) => binding.detach(),
-            Err(e) => ulog!(LOG_WARNING, "[MyGame] cannot watch the pawn: {e}"),
+            Err(e) => log::warn!("[MyGame] cannot watch the pawn: {e}"),
         }
     }
 }

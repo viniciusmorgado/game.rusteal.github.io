@@ -9,7 +9,7 @@ Delegates are how the engine says "this happened" to whoever is listening: an ac
 ```rust
 use bindings::engine::{
     BoxComponent, Character, CharacterExt, ECollisionChannel, ECollisionEnabled,
-    ECollisionResponse, PrimitiveComponentExt, SceneComponent,
+    ECollisionResponse, PrimitiveComponentExt, SceneComponent
 };
 
 #[uclass(parent = Actor)]
@@ -43,7 +43,7 @@ impl JumpPad {
             .checked()
             .and_then(|actor| actor.on_actor_begin_overlap().add_ufunction(&me, "BeginOverlap"))
         {
-            ulog!(LOG_WARNING, "[MyGame] jump pad overlap: {e}");
+            log::warn!("[MyGame] jump pad overlap: {e}");
         }
     }
 
@@ -75,7 +75,7 @@ fn receive_begin_play(&mut self) {
     });
 
     if let Err(e) = bound {
-        ulog!(LOG_WARNING, "[MyGame] trigger overlap: {e}");
+        log::warn!("[MyGame] trigger overlap: {e}");
     }
 }
 
@@ -122,7 +122,7 @@ fn receive_possess(&mut self, possessed_pawn: UObjectRef<Pawn>) {
 
     match bound {
         Ok(binding) => binding.detach(),
-        Err(e) => ulog!(LOG_WARNING, "[MyGame] cannot watch the pawn: {e}"),
+        Err(e) => log::warn!("[MyGame] cannot watch the pawn: {e}"),
     }
 }
 ```

@@ -70,7 +70,7 @@ impl WeaponPickup {
         let weapon_type = self.weapon_type();
 
         let Some(row) = weapon_type.get_row::<WeaponTableRow>() else {
-            ulog!(LOG_WARNING, "[MyGame] pickup without a weapon type");
+            log::warn!("[MyGame] pickup without a weapon type");
             return;
         };
 

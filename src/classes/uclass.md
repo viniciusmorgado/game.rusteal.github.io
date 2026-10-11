@@ -5,7 +5,6 @@
 ```rust
 use bindings::engine::{StaticMeshComponent, SceneComponent};
 use bindings::prelude::*;
-use rusteal_runtime::runtime::{LOG_DISPLAY, ulog};
 use rusteal_runtime::{uclass, uclass_impl};
 
 #[uclass(parent = Actor)]
@@ -24,7 +23,7 @@ pub struct Barrel {
 impl Barrel {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
-        ulog!(LOG_DISPLAY, "[MyGame] crate with {} health", self.health());
+        log::info!("[MyGame] crate with {} health", self.health());
     }
 }
 ```

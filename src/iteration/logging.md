@@ -3,19 +3,31 @@
 **The goal:** print messages from Rust code to the Output Log.
 
 ```rust
-use rusteal_runtime::runtime::{LOG_DISPLAY, LOG_ERROR, LOG_WARNING, ulog};
-
-ulog!(LOG_DISPLAY, "[MyGame] wave {wave} started");
-ulog!(LOG_WARNING, "[MyGame] no spawn points in the level");
-ulog!(LOG_ERROR, "[MyGame] could not load the save: {e}");
+log::info!("[MyGame] wave {wave} started");
+log::warn!("[MyGame] no spawn points in the level");
+log::error!("[MyGame] could not load the save: {e}");
 ```
 
-`ulog!` takes a level and the arguments of `format!`. Its messages go to the Output Log under the `LogRusteal` category, with the level's color: plain for `LOG_DISPLAY`, yellow for `LOG_WARNING`, red for `LOG_ERROR`.
+Rusteal logs through the [`log`](https://docs.rs/log) crate, the logging facade of the Rust ecosystem: the projects Rusteal creates depend on it (`log = { workspace = true }` in the game crate), and the library routes it to the Output Log when it loads. Its messages go under the `LogRusteal` category, with the level's color: plain for `info!`, yellow for `warn!`, red for `error!`.
 
 ```text
 LogRusteal: [MyGame] wave 3 started
 LogRusteal: Warning: [MyGame] no spawn points in the level
 ```
+
+`debug!` and `trace!` are off by default. Turn them on, for the whole library, where it starts:
+
+```rust
+fn verbose_logs() {
+    log::set_max_level(log::LevelFilter::Debug);
+}
+
+rusteal_runtime::on_load!(verbose_logs);
+```
+
+They show at the display level, like `info!`. The crates your game depends on that log through `log` (most do) show in the Output Log the same way.
+
+A project made before Rusteal routed `log` has no `log` dependency: add `log = "0.4"` to `[workspace.dependencies]` in `Rust/Cargo.toml` and `log = { workspace = true }` to the game crate's `[dependencies]`. Its `ulog!` calls keep working.
 
 ## Filtering
 
@@ -39,7 +51,7 @@ Engine calls that can fail return a `RustealResult`. A common pattern is to put 
 #[ufunction(Override)]
 fn receive_begin_play(&mut self) {
     if let Err(e) = self.setup() {
-        ulog!(LOG_WARNING, "[MyGame] setup failed: {e}");
+        log::warn!("[MyGame] setup failed: {e}");
     }
 }
 ```

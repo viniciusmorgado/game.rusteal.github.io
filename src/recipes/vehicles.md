@@ -25,7 +25,7 @@ A car's parent is `WheeledVehiclePawn`, which brings the skeletal mesh and the C
 ```rust
 use bindings::chaos_vehicles::{
     ChaosVehicleMovementComponentExt, ChaosWheeledVehicleMovementComponent, WheeledVehiclePawn,
-    WheeledVehiclePawnExt,
+    WheeledVehiclePawnExt
 };
 use bindings::enhanced_input::{ETriggerEvent, FInputActionValue, InputAction};
 use rusteal_runtime::runtime::Checked;
@@ -50,7 +50,7 @@ impl Car {
     #[ufunction(Override)]
     fn receive_restarted(&mut self) {
         if let Err(e) = self.bind_input() {
-            ulog!(LOG_WARNING, "[Racer] input binding failed: {e}");
+            log::warn!("[Racer] input binding failed: {e}");
         }
     }
 
@@ -137,7 +137,7 @@ The movement component's setups are structs: `EngineSetup`, `TransmissionSetup`,
 ```rust
 use bindings::chaos_vehicles::{
     ChaosVehicleMovementComponentExt, ChaosWheeledVehicleMovementComponentExt, ESteeringType,
-    FVehicleEngineConfigExt, FVehicleSteeringConfigExt, FVehicleTransmissionConfigExt,
+    FVehicleEngineConfigExt, FVehicleSteeringConfigExt, FVehicleTransmissionConfigExt
 };
 
 #[uclass(parent = Car)]
@@ -191,7 +191,7 @@ A wheel is a class whose parent is `ChaosVehicleWheel`, configured in class defa
 ```rust
 use bindings::chaos_vehicles::{
     ChaosVehicleWheel, ChaosVehicleWheelExt, ChaosWheeledVehicleMovementComponentExt, EAxleType,
-    FChaosWheelSetup, FChaosWheelSetupExt,
+    FChaosWheelSetup, FChaosWheelSetupExt
 };
 
 #[uclass(parent = ChaosVehicleWheel)]
@@ -471,7 +471,7 @@ The lap UI creates the countdown when it is constructed, listens to it, and pass
 #[ufunction(Override)]
 fn construct(&mut self) {
     if let Err(e) = self.start_countdown() {
-        ulog!(LOG_ERROR, "[TimeTrial] could not start the countdown: {e}");
+        log::error!("[TimeTrial] could not start the countdown: {e}");
     }
 }
 

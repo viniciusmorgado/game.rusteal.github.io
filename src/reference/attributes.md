@@ -102,4 +102,4 @@ On an enum whose variants carry no data: an Unreal enum, usable in Blueprints, w
 |---|---|
 | `rusteal_runtime::entry!()` | Once per library, in `lib.rs`: the entry point the plugin calls when it loads the library. |
 | `rusteal_runtime::on_load!(function)` | Runs a function every time the library loads, hot reloads included. |
-| `ulog!(level, "format", args...)` | Writes to the Output Log. |
+| `log::info!`, `log::warn!`, `log::error!` | Write to the Output Log, through the `log` crate (see [Logging](../iteration/logging.md)). |

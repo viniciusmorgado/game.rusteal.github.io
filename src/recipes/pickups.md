@@ -7,7 +7,7 @@
 ```rust
 use bindings::engine::{
     ECollisionChannel, ECollisionEnabled, ECollisionResponse, GameplayStatics,
-    PrimitiveComponentExt, SceneComponent, SphereComponent, SphereComponentExt,
+    PrimitiveComponentExt, SceneComponent, SphereComponent, SphereComponentExt
 };
 
 #[uclass(parent = Actor)]
@@ -34,7 +34,7 @@ impl Coin {
     #[ufunction(Override)]
     fn receive_actor_begin_overlap(&mut self, other_actor: UObjectRef<Actor>) {
         if let Err(e) = self.pick_up(other_actor) {
-            ulog!(LOG_WARNING, "[MyGame] pickup failed: {e}");
+            log::warn!("[MyGame] pickup failed: {e}");
         }
     }
 
