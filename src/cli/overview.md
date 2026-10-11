@@ -27,3 +27,17 @@ rusteal watch
 ```
 
 Open the editor, change Rust code, save: `rusteal watch` builds, the editor reloads the library, and you press **Play**. When you change `rusteal.toml` or the engine version, stop the watch and run `rusteal build --all` once. When the game is ready to be tried outside the editor, run `rusteal package`.
+
+## Use case: running the CLI from the IDE
+
+**The goal:** start `rusteal watch` from the IDE, with one run configuration that works on Linux and on Windows.
+
+Every command is also a Cargo subcommand: `cargo rusteal watch` is `rusteal watch` (`cargo install rusteal` installs both). In RustRover:
+
+1. Open **Run > Edit Configurations...**.
+2. Click **+** and choose **Cargo**.
+3. Name it `rusteal watch`, and set **Command** to `rusteal watch`.
+4. Set **Working directory** to the project's `Rust` directory: the command finds the project by walking up from it.
+5. Tick **Store as project file** to share it with the rest of the team, then click **OK**.
+
+> **Screenshot:** RustRover's Run/Debug Configurations with a Cargo configuration whose command is rusteal watch. *(images/cli/rustrover_watch.png)*
