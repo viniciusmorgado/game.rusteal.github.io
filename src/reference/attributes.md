@@ -9,7 +9,7 @@ On a struct: the struct is an Unreal class.
 | Argument | Required | What it is |
 |---|---|---|
 | `parent = Type` | yes | The parent class: an engine class from the bindings, or a Rust class. |
-| `implements = [Trait, "path", ...]` | no | Unreal interfaces the class implements: `#[uinterface]` traits, and other interfaces by class path. See [Interfaces](../classes/interfaces.md). |
+| `implements = [Trait, "path", ...]` | no | Unreal interfaces the class implements: other interfaces by class path, and `#[uinterface]` traits (after 0.7.0). See [Interfaces](../classes/interfaces.md). |
 | `config = "Category"` | no | The config category its `Config` properties are read from and saved to. See [Project settings and config](../systems/settings.md). |
 
 ## `#[uproperty(...)]`
@@ -60,6 +60,8 @@ On an `impl` block of a `#[uclass]`: its marked methods are the class's Unreal f
 On the implementation of a `#[uinterface]` trait for a `#[uclass]` (`impl Interactable for Door`): the class implements the interface, and every method is its function of the same name, with no attribute.
 
 ## `#[uinterface]`
+
+Not released yet: it comes in a release after 0.7.0.
 
 On a trait, with no arguments: the trait is an Unreal interface, Blueprint-implementable, whose functions are Blueprint events. Its functions take `&self` or `&mut self`, then `#[ufunction]` parameter types, return a `#[ufunction]` return type, and have no body; the trait has no generics and no supertraits. See [Interfaces](../classes/interfaces.md).
 

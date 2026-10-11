@@ -4,6 +4,8 @@ Two different tools answer "different classes that respond to the same call": Un
 
 ## Use case: an interface declared in Rust
 
+> **Not released yet.** `#[uinterface]` is in development and comes in a release after 0.7.0. Until then, a Rust class implements the interfaces declared in C++ or as Blueprint Interface assets, by class path: see [implementing a Blueprint Interface](#use-case-implementing-a-blueprint-interface).
+
 **The goal:** doors, chests and levers the player interacts with, some written in Rust and some in Blueprints, and one call that reaches any of them.
 
 ### In Rust
