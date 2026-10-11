@@ -20,6 +20,7 @@
 - [Building](./cli/build.md)
 - [Binding more of the engine](./cli/rusteal_toml.md)
 - [Development and release builds](./cli/profiles.md)
+- [Platform optimizations](./cli/optimizations.md)
 
 # The iteration loop
 

@@ -21,6 +21,9 @@ Check that Rust uses the MSVC host and that the Visual Studio components match t
 
 ## In the editor
 
+**On Linux, the editor closes with a segfault in the NVIDIA driver, after a window closes or PIE stops.**
+The crash report shows `vkWaitForFences` under `FVulkanSwapChain::AcquireImageIndex`, and the log has `AcquireNextImage() failed due to the outdated swapchain` just before. Run `rusteal watch` once, so it writes the [platform optimizations](../cli/optimizations.md), and restart the editor. If it happens in the Project Browser, before a project is open, add the line to the engine's own config, as that page shows.
+
 **A Rust class does not show in the Place Actors panel or the class picker.**
 The library did not load, or the class is not compiled in: check the Output Log for the library's load messages and errors, and that the class's module is declared in `lib.rs` (`mod my_class;`).
 

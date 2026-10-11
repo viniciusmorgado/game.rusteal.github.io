@@ -5,7 +5,7 @@ Commands that take `[project]` find the project by walking up from the current d
 ## rusteal new
 
 ```bash
-rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--feature <name>]... [--no-build]
+rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--feature <name>]... [--no-build] [--optimizations <on|off>]
 ```
 
 Creates a project from a template, installs the plugins, adds each `--feature` as a plugin, writes the Rust workspace and runs the whole build. See [Your first project](../getting_started/first_project.md), [Starting from a template](../getting_started/templates.md) and [Adding features](../getting_started/features.md).
@@ -29,10 +29,10 @@ Without flags, steps 4 and 5: build the Rust libraries and deploy them. See [Bui
 ## rusteal watch
 
 ```bash
-rusteal watch [project] [--plugin <Name>]
+rusteal watch [project] [--plugin <Name>] [--optimizations <on|off>]
 ```
 
-Runs `rusteal build` every time a Rust source changes, until `Ctrl+C`. See [rusteal watch](../iteration/watch.md).
+Writes the [platform optimizations](../cli/optimizations.md), then runs `rusteal build` every time a Rust source changes, until `Ctrl+C`. See [rusteal watch](../iteration/watch.md).
 
 ## rusteal generate
 
@@ -53,10 +53,10 @@ Moves the project to the CLI's Rusteal version. See [Versions and upgrades](../g
 ## rusteal package
 
 ```bash
-rusteal package [project] [--shipping] [--output <dir>]
+rusteal package [project] [--shipping] [--output <dir>] [--optimizations <on|off>]
 ```
 
-Builds the release libraries and packages the game. See [Packaging a game](../shipping/packaging.md).
+Builds the release libraries and packages the game, with the [platform optimizations](../cli/optimizations.md) unless `--optimizations off`. See [Packaging a game](../shipping/packaging.md).
 
 ## rusteal plugin new
 

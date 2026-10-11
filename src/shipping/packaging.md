@@ -14,6 +14,7 @@ rusteal package --shipping --output ~/Builds/MyGame
 | (none) | A **Development** build, into `<project>/Packaged`. |
 | `--shipping` | A **Shipping** build: no console, no logging, fully optimized. |
 | `--output <dir>` | Where the packaged game goes. |
+| `--optimizations off` | Leaves out the [platform optimizations](../cli/optimizations.md), which the game carries by default. |
 
 ## Before packaging
 
