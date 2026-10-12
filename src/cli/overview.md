@@ -30,7 +30,7 @@ Open the editor, change Rust code, save: `rusteal watch` builds, the editor relo
 
 ## Use case: running the CLI from the IDE
 
-**The goal:** start `rusteal watch` from the IDE, with one run configuration that works on Linux and on Windows.
+**The goal:** start `rusteal watch` from the IDE, with one run configuration that works on Linux, macOS and Windows.
 
 Every command is also a Cargo subcommand: `cargo rusteal watch` is `rusteal watch` (`cargo install rusteal` installs both). In RustRover:
 

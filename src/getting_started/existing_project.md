@@ -24,6 +24,6 @@ cd /path/to/YourProject
 rusteal build --all
 ```
 
-The project needs a C++ module (`Source/<Project>/`) for the Unreal Build Tool to build it. A project made from the editor's Blueprint templates has none: add one from the editor (**Tools > New C++ Class**, any class) before running the build.
+The project needs a C++ module (`Source/<Project>/`) for the Unreal Build Tool to build it. A project made from the editor's Blueprint templates has none: add one from the editor (**Tools > New C++ Class**, any class) before running the build. On macOS that needs Xcode, as in [Prerequisites](prerequisites.md#macos-apple-silicon).
 
 Your existing C++ and Blueprint classes stay as they are, and work next to the Rust ones: Blueprints derive from Rust classes, call their functions and bind their delegates the way they do with C++ classes.

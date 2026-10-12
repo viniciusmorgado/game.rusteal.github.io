@@ -19,7 +19,13 @@ The project and the CLI are at different Rusteal versions. See [Versions and upg
 **On Windows, Rust fails to link or the engine refuses the compiler.**
 Check that Rust uses the MSVC host and that the Visual Studio components match the ones in [Prerequisites](../getting_started/prerequisites.md).
 
+**On macOS, the Unreal Build Tool cannot find Xcode or the macOS SDK.**
+The active developer directory is the Command Line Tools instead of Xcode, or Xcode was never opened. Open Xcode once, run `sudo xcode-select --switch /Applications/Xcode.app` and build again; [Prerequisites](../getting_started/prerequisites.md#macos-apple-silicon) lists the Xcode versions the engine accepts.
+
 ## In the editor
+
+**The Blueprints derived from Rust classes fail to load, and Play gives a floating camera instead of the player.**
+The Rust library did not load, so its classes do not exist: the log has `CreateExport: Failed to load Outer` for the Blueprints, and the game falls back to the default game mode and its spectator pawn. Look for the library's load message under `LogRusteal`. On macOS, Rusteal 0.8.0 looked for the library under the wrong name (`no Rust library at .../Binaries/Mac/rusteal.dylib`); [upgrade](../getting_started/versions.md) the project to a newer Rusteal.
 
 **On Linux, the editor closes with a segfault in the NVIDIA driver, after a window closes or PIE stops.**
 The crash report shows `vkWaitForFences` under `FVulkanSwapChain::AcquireImageIndex`, and the log has `AcquireNextImage() failed due to the outdated swapchain` just before. Run `rusteal watch` once, so it writes the [platform optimizations](../cli/optimizations.md), and restart the editor. If it happens in the Project Browser, before a project is open, add the line to the engine's own config, as that page shows.

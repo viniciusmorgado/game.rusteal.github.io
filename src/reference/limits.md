@@ -6,8 +6,8 @@ What Rusteal does not do yet, and what to do meanwhile.
 
 | Not yet | Meanwhile |
 |---|---|
-| Android and iOS builds (being actively worked on) | Run and test the game in the editor on Linux or Windows, touch controls included; the `ar` template runs there without an AR session. |
-| Console builds (being actively worked on) | Linux and Windows builds. |
+| Android and iOS builds (being actively worked on) | Run and test the game in the editor on Linux, macOS or Windows, touch controls included; the `ar` template runs there without an AR session. |
+| Console builds (being actively worked on) | Linux, macOS and Windows builds. |
 
 ## Classes
 
@@ -25,6 +25,7 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Reloading a changed `#[ustruct]` | Restart the editor. |
 | Replacing a changed class or interface outside the editor (`-game`) | Restart the game. |
 | Keeping Rust-only fields across a reload | Keep what must survive in `#[uproperty]` fields. |
+| Freeing the previous library on macOS (macOS never unloads a Rust library: each reload keeps the previous one in memory) | Restart the editor after a long session of reloads. |
 
 ## Delegates
 
@@ -53,4 +54,6 @@ What Rusteal does not do yet, and what to do meanwhile.
 |---|---|
 | Linux (x64) | Supported |
 | Windows (x64) | Supported |
-| macOS | Not tested yet |
+| macOS (Apple silicon) | Supported |
+
+macOS on Intel processors has not been tested. Packaging on macOS has not been verified: on the test machine (macOS 27, Xcode 27), Unreal Engine 5.8 fails to finalize the `.app` with Xcode (`Failed to finalize the .app with Xcode`) for any C++ project, the engine's own blank template included. Developing in the editor, building and hot reload work.

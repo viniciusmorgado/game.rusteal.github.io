@@ -62,6 +62,26 @@ Then pin it in your game project with a `rust-toolchain.toml`, or for the direct
 rustup override set stable-x86_64-pc-windows-msvc --path <dir>
 ```
 
-## macOS
+## macOS (Apple silicon)
 
-Rusteal has not been tested on macOS yet.
+| Dependency | Version | Where from | What for |
+|---|---|---|---|
+| macOS | 14 Sonoma or newer | | the oldest macOS the engine runs on |
+| Xcode | 15.2 to 27.x | the App Store, or [developer.apple.com/xcode](https://developer.apple.com/xcode) | the clang toolchain and the macOS SDK the engine builds with, and the linker Rust uses |
+| Rust | stable, 1.88 or newer, `aarch64-apple-darwin` | [rustup](https://rustup.rs) | installing the `rusteal` CLI, building your game crate |
+| Unreal Engine | 5.8 | the Epic Games Launcher | the game |
+
+The engine brings the .NET SDK that runs the Unreal Build Tool. Rusteal is supported on Macs with Apple silicon (M1 and later); Intel Macs have not been tested.
+
+Open Xcode once after installing it, so it accepts its license and installs its components, and make it the active developer directory: the Unreal Build Tool needs the full Xcode, not only the Command Line Tools.
+
+```bash
+sudo xcode-select --switch /Applications/Xcode.app
+xcode-select --print-path
+```
+
+The second command prints `/Applications/Xcode.app/Contents/Developer`. `rustup show` prints the Apple silicon host:
+
+```text
+Default host: aarch64-apple-darwin
+```

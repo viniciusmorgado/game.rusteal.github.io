@@ -26,11 +26,13 @@ rusteal package --shipping --output ~/Builds/MyGame
 
 ## Running it
 
-The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows).
+The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows, the `MyGame.app` bundle on macOS).
+
+Packaging on macOS has not been verified yet: on the machine Rusteal was tested on (macOS 27, Xcode 27), the engine fails to finalize the `.app` with Xcode for any C++ project, with or without Rusteal. See [Known limits](../reference/limits.md).
 
 ## When something is missing
 
 A packaged game that starts but misses Rust behavior usually lacks a library or an asset:
 
-- the log (`Saved/Logs/` next to the executable, in a Development build) shows whether the Rusteal libraries loaded, and their errors;
+- the log (`Saved/Logs/` next to the executable, `~/Library/Logs/<Project>/` on macOS, in a Development build) shows whether the Rusteal libraries loaded, and their errors;
 - an asset that is in the editor but not in the package is the case above: add its directory to cook.
