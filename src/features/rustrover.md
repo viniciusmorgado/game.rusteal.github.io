@@ -1,6 +1,6 @@
 # rustrover
 
-**The goal:** a new project that opens in RustRover with its run configurations ready, the same on Linux and Windows.
+**The goal:** a new project that opens in RustRover with its run configurations ready, the same on Linux, macOS and Windows.
 
 `rustrover` is a feature that adds files to the project instead of a plugin: two RustRover run configurations, stored as project files in `Rust/.run/`:
 

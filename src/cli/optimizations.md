@@ -6,7 +6,7 @@ Some engine settings fix or tune one platform and have no business on the others
 
 ## What every project gets
 
-The templates ship one Linux setting:
+The templates ship one Linux setting, and none for Windows or macOS yet:
 
 ```toml
 [optimizations.linux.Engine.ConsoleVariables]
@@ -15,7 +15,7 @@ The templates ship one Linux setting:
 
 On Linux the engine renders with Vulkan. Whenever the swapchain goes out of date (a window is resized or closed, PIE stops, the game switches to fullscreen, alt-tab), the engine recreates it and, by default, waits for the next image with a CPU fence. NVIDIA's Linux driver can crash inside `vkWaitForFences` right then: the editor closes with a segfault in the driver a second or two after `AcquireNextImage() failed due to the outdated swapchain` in the log. With `0`, the wait is done on the GPU with a semaphore, which never calls the crashing function. It costs nothing measurable, and Epic ships the same value on Android.
 
-The crash is not the editor's alone: a packaged game runs the same Vulkan code, so a player on Linux with an NVIDIA card can hit it when resizing or alt-tabbing. That is why the setting ships with the game too. On Windows the engine uses DirectX 12, and the setting is never written there.
+The crash is not the editor's alone: a packaged game runs the same Vulkan code, so a player on Linux with an NVIDIA card can hit it when resizing or alt-tabbing. That is why the setting ships with the game too. On Windows the engine uses DirectX 12 and on macOS Metal, and the setting is never written there.
 
 ## Where it goes
 
@@ -41,9 +41,9 @@ Commit the file with the project: every Linux machine writes the same block, so 
 rusteal watch
 ```
 
-`rusteal new` writes the optimizations into the new project, and `rusteal watch` writes them again each time it starts. You may work on several machines, Linux and Windows, or a teammate on another one: whoever starts `rusteal watch` on Linux has the settings, and nobody has to copy anything. The Rusteal CLI built for Windows has no Linux settings in it at all; it is compiled per platform.
+`rusteal new` writes the optimizations into the new project, and `rusteal watch` writes them again each time it starts. You may work on several machines, Linux, macOS and Windows, or a teammate on another one: whoever starts `rusteal watch` on Linux has the settings, and nobody has to copy anything. The Rusteal CLI built for Windows or macOS has no Linux settings in it at all; it is compiled per platform.
 
-The editor reads config files when it starts: after the first `rusteal watch` of a new setting, restart the editor once. Check that it took in `Saved/Logs/<Project>.log`:
+The editor reads config files when it starts: after the first `rusteal watch` of a new setting, restart the editor once. Check that it took in `Saved/Logs/<Project>.log` (`~/Library/Logs/Unreal Engine/<Project>Editor/<Project>.log` on macOS):
 
 ```text
 LogConfig: Set CVar [[r.Vulkan.CpuWaitForFence:0]]
@@ -63,7 +63,7 @@ That removes the block, and the file too if Rusteal had created it; the next `ru
 rusteal package --shipping
 ```
 
-`rusteal package` writes the optimizations of the platform it packages for, so the game carries them, then puts the project's config files back exactly as they were before the package. Packaging on Windows for Windows, nothing of Linux goes in: the engine stages `Config/Linux` for Linux builds only, and the Windows CLI does not write it anyway.
+`rusteal package` writes the optimizations of the platform it packages for, so the game carries them, then puts the project's config files back exactly as they were before the package. Packaging on Windows for Windows, or on macOS for macOS, nothing of Linux goes in: the engine stages `Config/Linux` for Linux builds only, and the Windows and macOS CLIs do not write it anyway.
 
 To ship a game without them:
 

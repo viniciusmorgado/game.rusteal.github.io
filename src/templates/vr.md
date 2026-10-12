@@ -1,6 +1,6 @@
 # vr
 
-The engine's Virtual Reality template on OpenXR: its pawn teleports along the navigation mesh, snap turns and poses the hands; grabbable objects, a pistol and its projectiles, a 3D menu, passthrough and a spectator camera are Rust classes. Play it with **Play > VR Preview** and an OpenXR headset.
+The engine's Virtual Reality template on OpenXR: its pawn teleports along the navigation mesh, snap turns and poses the hands; grabbable objects, a pistol and its projectiles, a 3D menu, passthrough and a spectator camera are Rust classes. Play it with **Play > VR Preview** and an OpenXR headset, on Linux or Windows. macOS has no OpenXR runtime: there the level runs with **Play** and an untracked pawn, as in [Testing without a headset](../recipes/vr.md#testing-without-a-headset).
 
 ```bash
 rusteal new MyGame --template vr

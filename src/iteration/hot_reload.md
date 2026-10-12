@@ -42,6 +42,7 @@ A field with no attribute is Rust's alone, kept outside the Unreal object, and a
 - A change to `rusteal.toml`, or a new engine version: run `rusteal build --all`, then restart the editor.
 - A new Rusteal version after `rusteal upgrade`: restart the editor.
 - Outside the editor (a game started with `-game`), a changed class or interface cannot be replaced: it keeps its old shape, and the log asks for a restart. Function bodies still update.
+- On macOS, after a long session of reloads: macOS never unloads a Rust library, so each reload keeps the previous one in memory until the editor closes. A restart gives that memory back.
 
 ## Reloading by hand
 

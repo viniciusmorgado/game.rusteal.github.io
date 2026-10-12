@@ -50,4 +50,4 @@ Every crates.io dependency you add is covered by `"*"`: optimized, with file and
 debug = true
 ```
 
-Keep the bindings at `line-tables-only`: with full debug info, the library grows past a hundred megabytes, and every hot reload loads it again.
+Keep the bindings at `line-tables-only`: with full debug info, the library grows past a hundred megabytes, and every hot reload loads it again. On macOS the debug info stays in the object files next to the library (Rust's default there), so the library itself stays small; the reload still has to copy it, and each reload keeps the previous library in memory until the editor closes.

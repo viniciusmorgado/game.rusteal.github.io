@@ -84,4 +84,4 @@ How you split the rest into modules is up to you; how you split the rest into mo
 
 ## Where the library goes
 
-`rusteal build` deploys the library to `Plugins/Rusteal/Binaries/<Platform>/`: `librusteal.so` on Linux, `rusteal.dll` on Windows. The plugin loads it from there when the editor or the game starts.
+`rusteal build` deploys the library to `Plugins/Rusteal/Binaries/<Platform>/`: `librusteal.so` on Linux, `librusteal.dylib` on macOS, `rusteal.dll` on Windows. The plugin loads it from there when the editor or the game starts.
