@@ -20,7 +20,7 @@ Rebuilding after a change must be fast, and the game must still run well in the 
 rusteal build --release
 ```
 
-The fastest library possible, however long it takes to build: one codegen unit per crate and link-time optimization across crates, which also drops the parts of the bindings the game does not use. `rusteal package` always builds this profile.
+The fastest library possible, however long it takes to build: one codegen unit per crate and link-time optimization across crates, which also drops the parts of the bindings the game does not use. `rusteal package` always builds this profile; with `--static`, the Rust code is built once more for the game, with link-time optimization across every library at once (see [Linking the Rust code into the game](../shipping/packaging.md#linking-the-rust-code-into-the-game)).
 
 ## Tuning
 
@@ -34,7 +34,7 @@ opt-level = 1
 opt-level = 3
 debug = "line-tables-only"
 
-[profile.dev.package.bindings]
+[profile.dev.package.my-game-bindings]
 opt-level = 3
 debug = "line-tables-only"
 

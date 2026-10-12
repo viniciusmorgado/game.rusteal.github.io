@@ -7,7 +7,8 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Not yet | Meanwhile |
 |---|---|
 | Android and iOS builds (being actively worked on) | Run and test the game in the editor on Linux, macOS or Windows, touch controls included; the `ar` template runs there without an AR session. |
-| Console builds (being actively worked on) | Linux, macOS and Windows builds. |
+| Console builds (being actively worked on: what needs no SDK is done) | Linux, macOS and Windows builds; `rusteal package --static` and the habits in [Getting ready for consoles](../shipping/consoles.md). |
+| `rusteal package --static` on Windows and macOS (written, not yet validated) | `--static` on Linux; the default packaging elsewhere. |
 
 ## Classes
 

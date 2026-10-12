@@ -53,10 +53,19 @@ Moves the project to the CLI's Rusteal version. See [Versions and upgrades](../g
 ## rusteal package
 
 ```bash
-rusteal package [project] [--shipping] [--output <dir>] [--optimizations <on|off>]
+rusteal package [project] [--shipping] [--output <dir>] [--static] [--platform <name|file>] [--optimizations <on|off>]
 ```
 
-Builds the release libraries and packages the game, with the [platform optimizations](../cli/optimizations.md) unless `--optimizations off`. See [Packaging a game](../shipping/packaging.md).
+Builds the release libraries and packages the game, with the [platform optimizations](../cli/optimizations.md) unless `--optimizations off`. `--static` links the Rust code into the game's executable; `--platform` packages for another platform, from its name or its definition file. See [Packaging a game](../shipping/packaging.md).
+
+## rusteal platform
+
+```bash
+rusteal platform list
+rusteal platform show <name|file>
+```
+
+Lists the built-in platforms and the definition files found, or prints a platform's definition. See [Packaging for another platform](../shipping/packaging.md#packaging-for-another-platform).
 
 ## rusteal plugin new
 

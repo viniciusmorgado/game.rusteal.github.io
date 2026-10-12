@@ -43,7 +43,7 @@ It also holds the build profiles, which only a workspace's `Cargo.toml` can set.
 
 ## The game crate
 
-`Rust/my-game/Cargo.toml` makes the crate a dynamic library and depends on the runtime and the bindings:
+`Rust/my-game/Cargo.toml` makes the crate a library, dynamic for the editor and a Rust library for [static packaging](../shipping/packaging.md#linking-the-rust-code-into-the-game), and depends on the runtime and the bindings:
 
 ```toml
 [package]
@@ -53,11 +53,11 @@ edition = "2024"
 publish = false
 
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 rusteal-runtime = { workspace = true }
-bindings = { path = "../bindings" }
+bindings = { package = "my-game-bindings", path = "../bindings" }
 glam = { workspace = true }
 log = { workspace = true }
 ```
@@ -76,11 +76,11 @@ mod hello;
 
 **A game written with Rusteal never needs `unsafe`.** Everything a game does, Rusteal's API does in safe Rust, and the code its macros generate is accepted by `#![deny(unsafe_code)]`; the line makes the compiler refuse an `unsafe` that slips in, so keep it. If something seems to need `unsafe`, look for the safe call in this handbook; if there is none, it is a gap in Rusteal to report, not something to work around.
 
-How you split the rest into modules is up to you; how you split the rest into modules is up to you. The templates keep each class in its own file, and the rules that do not touch the engine in a `model.rs` next to it, where `cargo test` can test them (see [Testing without the engine](../iteration/testing.md)).
+How you split the rest into modules is up to you. The templates keep each class in its own file, and the rules that do not touch the engine in a `model.rs` next to it, where `cargo test` can test them (see [Testing without the engine](../iteration/testing.md)).
 
 ## The bindings crate
 
-`Rust/bindings/` is generated from the engine you build with, and only for the engine modules `rusteal.toml` lists. Do not edit it: the next generation overwrites it. To bind more of the engine (AI, Niagara, StateTree, Gameplay Tags...), see [Binding more of the engine](../cli/rusteal_toml.md).
+`Rust/bindings/` is generated from the engine you build with, and only for the engine modules `rusteal.toml` lists. Do not edit it: the next generation overwrites it. Its package is named after your crate (`my-game-bindings`), so that the game and each plugin have their own, and your crate imports it as `bindings`. `entry!()` connects the two when the library starts: it uses the crate named `bindings`, and `entry!(other_name)` names another one. To bind more of the engine (AI, Niagara, StateTree, Gameplay Tags...), see [Binding more of the engine](../cli/rusteal_toml.md).
 
 ## Where the library goes
 

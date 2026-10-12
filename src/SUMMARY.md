@@ -109,6 +109,7 @@
 # Shipping
 
 - [Packaging a game](./shipping/packaging.md)
+- [Getting ready for consoles](./shipping/consoles.md)
 
 # Reference
 

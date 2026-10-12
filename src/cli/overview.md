@@ -11,7 +11,8 @@ Every Rusteal task is a `rusteal` command. Commands that act on a project take i
 | `rusteal watch` | Builds every time a Rust source file changes. | [rusteal watch](../iteration/watch.md) |
 | `rusteal generate` | Regenerates the bindings crate and the C++ wrappers. | [Building](build.md) |
 | `rusteal upgrade` | Moves the project to the CLI's Rusteal version. | [Versions and upgrades](../getting_started/versions.md) |
-| `rusteal package` | Builds the release libraries and packages the game. | [Packaging a game](../shipping/packaging.md) |
+| `rusteal package` | Builds the release libraries and packages the game; `--static` links the Rust code into it, `--platform` targets another platform. | [Packaging a game](../shipping/packaging.md) |
+| `rusteal platform list`, `show <name>` | Lists the platforms a game can be packaged for, or prints one's definition. | [Packaging for another platform](../shipping/packaging.md#packaging-for-another-platform) |
 | `rusteal plugin new <Name>` | Creates a Rust plugin in the project. | [A new plugin](../plugins/new_plugin.md) |
 | `rusteal plugin package <Name>` | Copies a plugin out, ready for another project. | [Packaging a plugin](../plugins/packaging.md) |
 

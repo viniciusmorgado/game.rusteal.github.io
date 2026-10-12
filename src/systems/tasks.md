@@ -19,7 +19,7 @@ task::spawn(
 );
 ```
 
-- The first closure runs on a thread of its own. It must not call the engine.
+- The first closure runs as a background task of the engine's task system, on one of its worker threads, like the engine's own background work (it shows up in Unreal Insights). It must not call the engine.
 - The second runs on the game thread, on a frame after the first finishes, with its result. There, the engine can be called again.
 
 Capture `UObjectRef`s, not Rust class values, in the second closure, and turn them back into the class with `from_obj`: the object may have been destroyed while the work ran.
@@ -37,7 +37,7 @@ task::spawn(
 );
 ```
 
-Add `rayon` to the game crate's `Cargo.toml` like any dependency.
+Add `rayon` to the game crate's `Cargo.toml` like any dependency. `rayon` starts its own threads: on PC that is fine; for a game that also targets consoles, see [Getting ready for consoles](../shipping/consoles.md).
 
 ## Other tools
 
@@ -45,7 +45,7 @@ Add `rayon` to the game crate's `Cargo.toml` like any dependency.
 |---|---|
 | `task::run_on_game_thread(closure)` | Runs a closure on the game thread, on the next frame, from any thread. |
 | `task::on_tick(closure)` | Runs a closure every frame, the editor's frames too, until the returned handle's `remove()`. |
-| `task::is_game_thread()` | Whether the code runs on the game thread. |
+| `task::is_game_thread()` | Whether the code runs on the game thread (the engine's `IsInGameThread`). |
 
 ```rust
 let handle = task::on_tick(|delta_seconds| {
@@ -54,8 +54,22 @@ let handle = task::on_tick(|delta_seconds| {
 handle.remove();
 ```
 
+## Measuring time
+
+`rusteal_runtime::runtime::time` reads the engine's clock, the one the engine's own profiling uses:
+
+```rust
+use rusteal_runtime::runtime::time::Instant;
+
+let started = Instant::now();
+let dungeon = generate_dungeon(seed);
+log::info!("generated in {:?}", started.elapsed());
+```
+
+`Instant` has `now`, `elapsed`, `duration_since`, `checked_duration_since`, and adds and subtracts `Duration`s, like `std::time::Instant`. For gameplay timing, the world's time (`GameplayStatics::get_time_seconds`) follows pause and time dilation; `Instant` does not.
+
 ## Hot reload and shutdown
 
-A library waits for its spawned work before it unloads (a hot reload, the editor closing), so no thread runs code that is gone. A result still waiting for the game thread at that moment is dropped. Keep spawned work short, or split it, so a reload does not wait for long.
+A library waits for its spawned work before it unloads (a hot reload, the editor closing), so no thread runs code that is gone. A result still waiting for the game thread at that moment is dropped. Keep spawned work short, or split it, so a reload does not wait for long; a task that never ends also holds one of the engine's worker threads.
 
 A panic in the work is caught and logged, and the second closure does not run.
