@@ -22,6 +22,9 @@ Check that Rust uses the MSVC host and that the Visual Studio components match t
 **On macOS, the Unreal Build Tool cannot find Xcode or the macOS SDK.**
 The active developer directory is the Command Line Tools instead of Xcode, or Xcode was never opened. Open Xcode once, run `sudo xcode-select --switch /Applications/Xcode.app` and build again; [Prerequisites](../getting_started/prerequisites.md#macos-apple-silicon) lists the Xcode versions the engine accepts.
 
+**On macOS, the engine fails to compile its shaders.**
+Xcode 26 and newer do not include the Metal shader compiler: the engine runs `metal`, `metal-ar` and `metallib` through `xcrun`, and the log shows that they cannot be found, or `Archiving failed: metallib failed`. Run `xcodebuild -downloadComponent MetalToolchain` (again after each Xcode update), check it with `xcodebuild -showComponent MetalToolchain`, and restart the editor.
+
 ## In the editor
 
 **The Blueprints derived from Rust classes fail to load, and Play gives a floating camera instead of the player.**

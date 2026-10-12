@@ -67,20 +67,29 @@ rustup override set stable-x86_64-pc-windows-msvc --path <dir>
 | Dependency | Version | Where from | What for |
 |---|---|---|---|
 | macOS | 14 Sonoma or newer | | the oldest macOS the engine runs on |
-| Xcode | 15.2 to 27.x | the App Store, or [developer.apple.com/xcode](https://developer.apple.com/xcode) | the clang toolchain and the macOS SDK the engine builds with, and the linker Rust uses |
+| Xcode | the latest; the engine accepts 15.2 to 27.x | the App Store, or [developer.apple.com/xcode](https://developer.apple.com/xcode) | the clang toolchain and the macOS SDK the engine builds with, and the linker Rust uses |
+| Metal Toolchain | the one for your Xcode | `xcodebuild -downloadComponent MetalToolchain` (below) | the Metal shader compiler (`metal`, `metallib`) the engine compiles its shaders with; Xcode 26 and newer no longer include it |
 | Rust | stable, 1.88 or newer, `aarch64-apple-darwin` | [rustup](https://rustup.rs) | installing the `rusteal` CLI, building your game crate |
 | Unreal Engine | 5.8 | the Epic Games Launcher | the game |
 
 The engine brings the .NET SDK that runs the Unreal Build Tool. Rusteal is supported on Macs with Apple silicon (M1 and later); Intel Macs have not been tested.
 
-Open Xcode once after installing it, so it accepts its license and installs its components, and make it the active developer directory: the Unreal Build Tool needs the full Xcode, not only the Command Line Tools.
+After installing Xcode, make it the active developer directory (the Unreal Build Tool needs the full Xcode, not only the Command Line Tools), let it accept its license and install its components, then download the Metal Toolchain: since Xcode 26 it is a separate component, and without it the engine cannot compile its shaders.
 
 ```bash
 sudo xcode-select --switch /Applications/Xcode.app
-xcode-select --print-path
+sudo xcodebuild -runFirstLaunch
+xcodebuild -downloadComponent MetalToolchain
 ```
 
-The second command prints `/Applications/Xcode.app/Contents/Developer`. `rustup show` prints the Apple silicon host:
+Check both:
+
+```bash
+xcode-select --print-path
+xcodebuild -showComponent MetalToolchain
+```
+
+The first prints `/Applications/Xcode.app/Contents/Developer`, the second `Status: installed`. Download the Metal Toolchain again after each Xcode update: each Xcode version has its own. `rustup show` prints the Apple silicon host:
 
 ```text
 Default host: aarch64-apple-darwin
