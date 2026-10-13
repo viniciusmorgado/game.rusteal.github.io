@@ -31,4 +31,4 @@ Some features add files to the project instead of a plugin: the setup of a tool 
 
 | Feature | Adds | What it is |
 |---|---|---|
-| [`rustrover`](../features/rustrover.md) | `Rust/.run/` | RustRover run configurations, stored as project files: **Rusteal Watch** and **Rusteal Test**, the same on Linux and Windows. |
+| [`rustrover`](../features/rustrover.md) | `Rust/.run/` | RustRover run configurations, stored as project files: **Rusteal Watch** and **Rusteal Test**, the same on Linux, macOS and Windows. |

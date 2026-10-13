@@ -16,9 +16,9 @@ The first command that needs the engine asks where it is installed:
 Unreal Engine root (the directory with Engine/ and Templates/):
 ```
 
-Answer with the directory that holds `Engine/`, for example the engine's install directory from the Epic Games Launcher on Windows, or the directory you extracted or built the engine in on Linux. Rusteal checks that the directory has `Engine/Build/BatchFiles` and asks again if it does not.
+Answer with the directory that holds `Engine/`, for example the engine's install directory from the Epic Games Launcher on Windows and macOS (`/Users/Shared/Epic Games/UE_5.8` by default on macOS), or the directory you extracted or built the engine in on Linux. Rusteal checks that the directory has `Engine/Build/BatchFiles` and asks again if it does not.
 
-The answer is saved in the CLI's configuration file, `~/.config/rusteal/config.toml` on Linux (the platform's configuration directory elsewhere), under `[engine].path`. It is the only setting Rusteal keeps per machine: everything else lives in the project. To point Rusteal at another engine, edit that file.
+The answer is saved in the CLI's configuration file, `~/.config/rusteal/config.toml` on Linux, `~/Library/Application Support/rusteal/config.toml` on macOS, `%APPDATA%\rusteal\config.toml` on Windows, under `[engine].path`. It is the only setting Rusteal keeps per machine: everything else lives in the project. To point Rusteal at another engine, edit that file.
 
 ## Checking the version
 

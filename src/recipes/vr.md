@@ -6,7 +6,7 @@ The `vr` template is the engine's Virtual Reality template with its gameplay in 
 rusteal new MyVR --template vr
 ```
 
-Open the project and press **Play > VR Preview** with an OpenXR runtime and a headset connected. Without a headset, **Play** in the viewport runs the same level with a non-tracked pawn.
+Open the project and press **Play > VR Preview** with an OpenXR runtime and a headset connected. Without a headset, **Play** in the viewport runs the same level with a non-tracked pawn. VR Preview needs Linux or Windows: macOS has no OpenXR runtime, so a Mac always plays the level that way.
 
 The project binds the XR modules, the navigation system the teleports land on and Niagara, which the template turns on (see [Binding more of the engine](../cli/rusteal_toml.md)):
 
@@ -330,4 +330,4 @@ capture.set_post_process_settings(&settings);
 
 ## Testing without a headset
 
-On a machine without a headset, Play In Editor runs the level with the pawn untracked. The template's code can be checked there by calling what the input would call: `StartTeleportTrace`, `TeleportTrace`, `TryTeleport`, `SnapTurn`, `ToggleMenu` on the pawn, `Fire` on a pistol, `EnableVRSpectator` on the spectator. The hand and menu input actions only fire with a headset's controllers.
+On a machine without a headset, or on a Mac, Play In Editor runs the level with the pawn untracked. The template's code can be checked there by calling what the input would call: `StartTeleportTrace`, `TeleportTrace`, `TryTeleport`, `SnapTurn`, `ToggleMenu` on the pawn, `Fire` on a pistol, `EnableVRSpectator` on the spectator. The hand and menu input actions only fire with a headset's controllers.

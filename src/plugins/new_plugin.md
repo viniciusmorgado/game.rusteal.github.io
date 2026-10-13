@@ -40,7 +40,7 @@ Plugins/Inventory/
 │   ├── Cargo.toml              # the plugin's own workspace
 │   ├── inventory/              # its code
 │   └── bindings/               # its generated bindings
-├── Binaries/<Platform>/        # librusteal_Inventory.so, rusteal_Inventory.dll
+├── Binaries/<Platform>/        # librusteal_Inventory.so, .dylib on macOS, rusteal_Inventory.dll
 └── Content/                    # the plugin's assets
 ```
 
