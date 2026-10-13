@@ -11,7 +11,7 @@ rusteal setup /path/to/YourProject
 It does not write the Rust workspace. Create it as `rusteal new` does (see [Project layout](layout.md)):
 
 1. `Rust/Cargo.toml`, the workspace, listing your crate and `bindings`, and pinning the Rusteal crates to the CLI's version (`rusteal --version`);
-2. `Rust/<crate>/Cargo.toml`, a `cdylib` depending on `rusteal-runtime`, `bindings` and `glam`;
+2. `Rust/<crate>/Cargo.toml`, a library depending on `rusteal-runtime`, `bindings` (the package `<crate>-bindings`) and `glam`;
 3. `Rust/<crate>/src/lib.rs`, with `rusteal_runtime::entry!();`;
 4. in `rusteal.toml`, `[project] crate = "<crate>"`, the package name of your crate.
 

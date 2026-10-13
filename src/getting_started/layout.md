@@ -43,7 +43,7 @@ It also holds the build profiles, which only a workspace's `Cargo.toml` can set.
 
 ## The game crate
 
-`Rust/my-game/Cargo.toml` makes the crate a library, dynamic for the editor and a Rust library for [static packaging](../shipping/packaging.md#linking-the-rust-code-into-the-game), and depends on the runtime and the bindings:
+`Rust/my-game/Cargo.toml` is a plain Rust library that depends on the runtime and the bindings; `rusteal build` builds it as the dynamic library the editor loads, and [static packaging](../shipping/packaging.md#linking-the-rust-code-into-the-game) links it into the game:
 
 ```toml
 [package]
@@ -51,9 +51,6 @@ name = "my-game"
 version = "0.1.0"
 edition = "2024"
 publish = false
-
-[lib]
-crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 rusteal-runtime = { workspace = true }

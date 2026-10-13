@@ -62,6 +62,8 @@ extension = "so"
 
 Any other platform comes from a definition file: given as `--platform <file>`, or found by its name in `~/.config/rusteal/platforms/` (`%APPDATA%\rusteal\platforms\` on Windows) or in a directory listed in `RUSTEAL_PLATFORM_PATH`. Besides the fields above, a definition can set `rust_target` (a target triple, or a target JSON file next to the definition), `toolchain` (a rustup toolchain, such as a nightly one), `build_std` (the standard library crates to build for the target), `cargo_args`, `rustflags`, `env`, `system_libraries` (linked with the archive) and `uat_args` (added to `BuildCookRun`).
 
+A JSON target needs a nightly toolchain, and recent nightlies also ask for `cargo_args = ["-Zjson-target-spec"]`.
+
 A platform other than the one the CLI runs on is packaged with `--static` only. The engine must support packaging for it from this machine, with its SDK installed.
 
 ## Before packaging

@@ -26,18 +26,42 @@ Capture `UObjectRef`s, not Rust class values, in the second closure, and turn th
 
 ## Using every core
 
-`rayon` spreads work over all cores inside the first closure:
+`rayon` spreads work over all cores. Rusteal runs it on the engine's own threads: turn on the runtime's `rayon` feature in the game crate's `Cargo.toml`,
+
+```toml
+rusteal-runtime = { workspace = true, features = ["rayon"] }
+```
+
+and run the parallel work through `rusteal_runtime::rayon::install`, inside the first closure:
 
 ```rust
-use rayon::prelude::*;
+use rusteal_runtime::rayon::{self, prelude::*};
 
 task::spawn(
-    move || agents.par_iter().map(|agent| plan_path(agent, &grid)).collect::<Vec<_>>(),
-    move |paths| apply_paths(paths),
+    move || {
+        rayon::install(|| agents.par_iter().map(|agent| plan_path(agent, &grid)).collect::<Vec<_>>())
+    },
+    move |paths| {
+        if let Ok(paths) = paths {
+            apply_paths(paths);
+        }
+    },
 );
 ```
 
-Add `rayon` to the game crate's `Cargo.toml` like any dependency. `rayon` starts its own threads: on PC that is fine; for a game that also targets consoles, see [Getting ready for consoles](../shipping/consoles.md).
+`install` runs the closure in your library's pool: one per library, with as many threads as the engine gives its own workers, started by the engine (they show up as `Rusteal rayon` threads in Unreal Insights) the first time it is used, and stopped and waited for when the library unloads. The prelude is `rayon`'s own, re-exported, so the game needs no `rayon` dependency of its own; `rusteal_runtime::rayon::ThreadPool::new(threads)` makes a pool of another size, which stops when it is dropped.
+
+Avoid `rayon`'s global pool (a `par_iter()` outside `install`): its threads are never stopped, so a [hot reload](../iteration/hot_reload.md) unloads the code they run, and the editor can crash. On a console they would also be the operating system's threads, not the engine's (see [Getting ready for consoles](../shipping/consoles.md)).
+
+## A thread of its own
+
+For work that runs as long as the game does, such as a streaming loader or a network loop, `task::spawn_thread` starts a dedicated engine thread:
+
+```rust
+let loader = task::spawn_thread("Level streamer", move || stream_levels(requests))?;
+```
+
+`join()` waits for it; a thread whose handle is dropped is waited for when the library unloads, so a thread must end when what it waits on closes. Engine calls still belong on the game thread: send results back with `task::run_on_game_thread`.
 
 ## Other tools
 
@@ -46,6 +70,7 @@ Add `rayon` to the game crate's `Cargo.toml` like any dependency. `rayon` starts
 | `task::run_on_game_thread(closure)` | Runs a closure on the game thread, on the next frame, from any thread. |
 | `task::on_tick(closure)` | Runs a closure every frame, the editor's frames too, until the returned handle's `remove()`. |
 | `task::is_game_thread()` | Whether the code runs on the game thread (the engine's `IsInGameThread`). |
+| `task::worker_count()` | How many worker threads the engine uses on this machine. |
 
 ```rust
 let handle = task::on_tick(|delta_seconds| {
