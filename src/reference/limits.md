@@ -56,4 +56,8 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Windows (x64) | Supported |
 | macOS (Apple silicon) | Supported |
 
-macOS on Intel processors has not been tested. Packaging on macOS has not been verified: on the test machine (macOS 27, Xcode 27), Unreal Engine 5.8 fails to finalize the `.app` with Xcode (`Failed to finalize the .app with Xcode`) for any C++ project, the engine's own blank template included. Developing in the editor, building and hot reload work.
+macOS on Intel processors has not been tested.
+
+| Not yet | Meanwhile |
+|---|---|
+| Packaging a Mac game from the editor's **Platforms** menu or with `RunUAT` on Xcode 27 (Unreal Engine 5.8 fails to finalize the `.app` with Xcode, for any C++ project) | Package with `rusteal package`, which works around it. |
