@@ -26,7 +26,7 @@ rusteal package --shipping --output ~/Builds/MyGame
 
 ## Running it
 
-The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows, the `MyGame.app` bundle on macOS).
+The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows, the `MyGame.app` bundle on macOS, `MyGame-Mac-Shipping.app` for a `--shipping` build).
 
 On macOS with Xcode 27, Unreal Engine 5.8 cannot finalize a game's `.app` by itself (`Failed to finalize the .app with Xcode`, with or without Rusteal); `rusteal package` works around it and says so in its output. Packaging with the engine's own tools (the editor's **Platforms** menu, or `RunUAT` by hand) still fails until Epic fixes it.
 
