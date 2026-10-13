@@ -26,9 +26,16 @@ rusteal package --shipping --output ~/Builds/MyGame
 
 ## Running it
 
-The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows, the `MyGame.app` bundle on macOS).
+The packaged game is in the output directory, under the platform's name: run the executable there (`MyGame.sh` on Linux, `MyGame.exe` on Windows, the `MyGame.app` bundle on macOS, `MyGame-Mac-Shipping.app` for a `--shipping` build).
 
 On macOS with Xcode 27, Unreal Engine 5.8 cannot finalize a game's `.app` by itself (`Failed to finalize the .app with Xcode`, with or without Rusteal); `rusteal package` works around it and says so in its output. Packaging with the engine's own tools (the editor's **Platforms** menu, or `RunUAT` by hand) still fails until Epic fixes it.
+
+## Sharing a Mac build
+
+By default the `.app` is signed to run on the Mac that built it only ("Sign to Run Locally", an ad-hoc signature): on that Mac it opens, but copied to another Mac, downloaded or sent through a chat, macOS's Gatekeeper refuses to open it, because Apple cannot check who made it.
+
+- **For a tester you trust**, they can open it anyway: Control-click the app, **Open**, then confirm, or **System Settings > Privacy & Security > Open Anyway** after the first refusal. From a terminal, `xattr -dr com.apple.quarantine MyGame.app` removes the mark the download left.
+- **For players**, the game has to be signed with a Developer ID from a paid Apple Developer account and notarized by Apple. Set the team in **Project Settings > Platforms > Xcode Projects** (`CodeSigningTeam` in `[/Script/MacTargetPlatform.XcodeProjectSettings]` of `Config/DefaultEngine.ini`), package, then send the app to Apple's notary service (`xcrun notarytool submit`) and attach the ticket to it (`xcrun stapler staple MyGame.app`).
 
 ## When something is missing
 
