@@ -88,10 +88,11 @@ Adds an editor library to a runtime plugin. See [A runtime and an editor library
 ## rusteal plugin package
 
 ```bash
-rusteal plugin package <Name> [--project <path>] [--output <dir>]
+rusteal plugin package <Name> [--project <path>] [--output <dir>] [--precompiled]
+rusteal plugin merge <into> <package>...
 ```
 
-Copies a plugin out with its release library. See [Packaging a plugin](../plugins/packaging.md).
+Copies a plugin out with its release library; `--precompiled` builds its C++ modules too, with the engine's `BuildPlugin`, so the project that takes it compiles nothing. `merge` joins packages made on several platforms into the first. See [Packaging a plugin](../plugins/packaging.md).
 
 ## rusteal launcher
 
