@@ -8,6 +8,7 @@
 - [Prerequisites](./getting_started/prerequisites.md)
 - [Installing the CLI](./getting_started/install.md)
 - [Your first project](./getting_started/first_project.md)
+- [Creating a project from the editor](./getting_started/from_the_editor.md)
 - [Project layout](./getting_started/layout.md)
 - [Starting from a template](./getting_started/templates.md)
   - [blank](./templates/blank.md)

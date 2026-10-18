@@ -5,10 +5,12 @@ Commands that take `[project]` find the project by walking up from the current d
 ## rusteal new
 
 ```bash
-rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--feature <name>]... [--no-build] [--optimizations <on|off>]
+rusteal new <Name> [--dir <path>] [--template <name>] [--variant <name>] [--feature <name>]... [--no-build] [--optimizations <on|off>] [--engine <path>] [--in-place]
 ```
 
 Creates a project from a template, installs the plugins, adds each `--feature` as a plugin, writes the Rust workspace and runs the whole build. See [Your first project](../getting_started/first_project.md), [Starting from a template](../getting_started/templates.md) and [Adding features](../getting_started/features.md).
+
+`--engine` uses that engine instead of the configured one (and saves it when none is configured). `--in-place` sets up a project the editor made from a Rust template, in its own directory; the launcher runs it (see [Creating a project from the editor](../getting_started/from_the_editor.md)).
 
 ## rusteal setup
 
@@ -83,6 +85,15 @@ rusteal plugin package <Name> [--project <path>] [--output <dir>]
 
 Copies a plugin out with its release library. See [Packaging a plugin](../plugins/packaging.md).
 
+## rusteal launcher
+
+```bash
+rusteal launcher install [--engine <path>]
+rusteal launcher remove [--engine <path>]
+```
+
+Builds the launcher with the engine's `BuildPlugin` and installs it in `Engine/Plugins/Marketplace/RustealLauncher`, or removes it. See [Creating a project from the editor](../getting_started/from_the_editor.md).
+
 ## Console commands
 
 | Command | What it does |
@@ -91,5 +102,6 @@ Copies a plugin out with its release library. See [Packaging a plugin](../plugin
 | `Rusteal.Reload <Name>` | Reloads one library: the project's name for the game's, the plugin's name for a plugin's. |
 | `Rusteal.AutoReload 0` | Stops reloading on deploy. |
 | `Rusteal.AutoReload 1` | Reloads on deploy (the default). |
+| `Rusteal.Launcher.Create` | In a project made from a Rust template, runs its setup again, as the **Retry** button does. |
 
 See [Console commands](../iteration/console.md).
