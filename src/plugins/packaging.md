@@ -27,4 +27,4 @@ A binary for another platform comes from packaging the plugin on that platform.
 
 ## In a packaged game
 
-A game packaged with [`rusteal package`](../shipping/packaging.md) stages the libraries of its runtime plugins next to its own. Editor plugins are left out, as the engine leaves out editor modules.
+A game packaged with [`rusteal package`](../shipping/packaging.md) stages the libraries of its runtime plugins next to its own. Editor plugins, and the editor library of a plugin that has both, are left out, as the engine leaves out editor modules.

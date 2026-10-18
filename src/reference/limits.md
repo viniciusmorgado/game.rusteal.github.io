@@ -38,7 +38,7 @@ What Rusteal does not do yet, and what to do meanwhile.
 
 | Not yet | Meanwhile |
 |---|---|
-| A runtime and an editor library in one plugin | Two plugins, `Name` and `NameEditor`. |
+| An editor library using its runtime library's Rust types | Their Unreal functions: dynamic calls, interfaces, Blueprint classes. |
 | The game using a plugin's Rust types | Dynamic calls, interfaces, subsystems found by class. |
 | Slate UI, details customizations, asset editors, importers, Blueprint nodes | Editor Utility Widgets in Blueprint calling Rust functions. |
 

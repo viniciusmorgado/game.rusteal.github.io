@@ -40,7 +40,7 @@ rusteal build /path/to/MyGame
 | `--from <n>` | Runs step `n` and every step after it. |
 | `--step <n>` | Runs only step `n`. |
 | `--release` | Builds the libraries with the release profile, for shipping. |
-| `--plugin <Name>` | Limits codegen, Cargo and deploy to one Rust plugin of the project. |
+| `--plugin <Name>` | Limits codegen, Cargo and deploy to one Rust plugin of the project, both of its libraries when it has two. |
 
 `--all` cannot be combined with `--from` or `--step`.
 

@@ -72,10 +72,18 @@ Lists the built-in platforms and the definition files found, or prints a platfor
 ## rusteal plugin new
 
 ```bash
-rusteal plugin new <Name> [--template <name>] [--project <path>] [--no-build]
+rusteal plugin new <Name> [--template <name>] [--project <path>] [--no-build] [--editor]
 ```
 
-Creates a Rust plugin in the project. See [A new plugin](../plugins/new_plugin.md).
+Creates a Rust plugin in the project; `--editor` gives a runtime plugin an editor library too. See [A new plugin](../plugins/new_plugin.md).
+
+## rusteal plugin editor
+
+```bash
+rusteal plugin editor <Name> [--project <path>] [--no-build]
+```
+
+Adds an editor library to a runtime plugin. See [A runtime and an editor library](../plugins/new_plugin.md#a-runtime-and-an-editor-library).
 
 ## rusteal plugin package
 
@@ -99,7 +107,7 @@ Builds the launcher with the engine's `BuildPlugin` and installs it in `Engine/P
 | Command | What it does |
 |---|---|
 | `Rusteal.Reload` | Reloads every Rust library of the project. |
-| `Rusteal.Reload <Name>` | Reloads one library: the project's name for the game's, the plugin's name for a plugin's. |
+| `Rusteal.Reload <Name>` | Reloads one library: the project's name for the game's, the plugin's name for a plugin's, `<Plugin>Editor` for a plugin's editor library. |
 | `Rusteal.AutoReload 0` | Stops reloading on deploy. |
 | `Rusteal.AutoReload 1` | Reloads on deploy (the default). |
 | `Rusteal.Launcher.Create` | In a project made from a Rust template, runs its setup again, as the **Retry** button does. |
