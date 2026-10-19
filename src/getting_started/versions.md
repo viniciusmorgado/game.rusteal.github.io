@@ -41,6 +41,15 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
   let component = hit.get_component().checked()?;
   ```
 
+- **Engine functions that change a struct passed by reference take `&mut OwnedStruct<T>`;** they took a `*mut u8`:
+
+  ```rust
+  let mut guid = KismetGuidLibrary::new_guid();
+  KismetGuidLibrary::invalidate_guid(&mut guid);
+  ```
+
+- **Engine structs read from the engine are copies Rust owns.** A struct a function returns or a property gives, `OwnedStruct<T>`, is a complete copy, arrays and strings included; dropping it frees them, and `clone()` copies them.
+
 - **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).
 
 ## Changing the engine version
