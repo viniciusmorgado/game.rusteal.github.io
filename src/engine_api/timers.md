@@ -47,6 +47,25 @@ impl Enemy {
 
 `k2_clear_timer` stops a timer by the same object and name. Clear the timers of an object in its `receive_end_play`, so none fires on an object being destroyed. Setting a timer that is already running restarts it.
 
+## Use case: a timer that calls a closure
+
+`k2_set_timer_delegate` is **Set Timer by Event**: it calls a closure instead of a function by name.
+
+```rust
+let handle = KismetSystemLibrary::k2_set_timer_delegate(
+    move || {
+        // three seconds later
+    },
+    3.0,
+    false,
+    None,
+    None,
+    None,
+);
+```
+
+It gives a timer handle, which `KismetSystemLibrary::k2_clear_and_invalidate_timer_handle` takes to stop the timer. The closure is kept until the library unloads; a closure that should go with an object belongs to a timer set by function name on that object.
+
 ## Use case: a looping timer at a fixed rate
 
 **The goal:** update stamina thirty times a second, whatever the frame rate.

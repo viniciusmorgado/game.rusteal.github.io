@@ -180,6 +180,18 @@ In a Blueprint that holds the component, select the component in the **Component
 
 > **Screenshot:** the Events section of the Details panel listing On Health Changed for a Rust component. *(images/engine_api/udelegate_events.png)*
 
+## Use case: an engine function that takes a delegate
+
+Some engine functions take a delegate to call later: a timeline's track, a timer, a widget's event. In Rust they take a closure, whose arguments are the delegate's (since 0.10):
+
+```rust
+timeline.add_interp_float(curve, move |alpha| {
+    // called on every update of the timeline, with the curve's value
+}, None, None);
+```
+
+The closure lives as long as the engine keeps the delegate, and is freed with it: when the object whose function took it is destroyed, or, for a static function (`KismetSystemLibrary::k2_set_timer_delegate`), when the library unloads. Delegates that return a value, or write to an argument, are not bound.
+
 ## Delegates that cannot be bound
 
 Only delegates exposed to Blueprints can be bound. Some engine delegates exist only in C++ (`UPathFollowingComponent::OnRequestFinished`, for one); for those, look for a Blueprint-exposed delegate raised for the same thing (the AI controller's `ReceiveMoveCompleted`).
