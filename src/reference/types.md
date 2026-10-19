@@ -11,8 +11,9 @@
 | `UObject*`, `TObjectPtr<T>` | `UObjectRef<T>` | a handle; see [Object references](../engine_api/object_refs.md) |
 | `TSubclassOf<T>` | `SubclassOf<T>` | a class |
 | `TScriptInterface<IFoo>` | `ScriptInterface<dyn Foo>` | an object implementing a `#[uinterface]`; `object.interface::<dyn Foo>()` (after 0.7.0) |
-| `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path |
-| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | |
+| `TScriptInterface<IBlendableInterface>` (an engine interface) | `UObjectRef<BlendableInterface>` | `object.cast::<BlendableInterface>()`; `FScriptInterface` is `UObjectRef<Object>` (0.10) |
+| `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path; the engine's too since 0.10 |
+| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10 |
 | A struct (`FVector`, `FHitResult`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait |
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |
 | Your enum | a `#[uenum]` | |

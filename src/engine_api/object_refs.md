@@ -85,6 +85,42 @@ The garbage collector keeps an object alive while something it knows about refer
   }
   ```
 
+## Engine soft and weak references
+
+The engine's own properties and functions use the same types as your classes:
+
+| Engine C++ | Rust | Reading it |
+|---|---|---|
+| `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | `path()`; `get()` gives the object if it is loaded, `load_synchronous()` loads it; `checked()` gives the loaded object or an error |
+| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | `get()` gives `Some(object)` while it exists, `None` once it is destroyed; `checked()` gives it or an error |
+
+A soft reference keeps its path even when nothing is loaded, so functions that take one take a path:
+
+```rust
+let music = KismetSystemLibrary::load_asset_blocking(&SoftObjectRef::new(
+    "/Game/Audio/Boss.Boss",
+));
+```
+
+A hit result's component is weak: the component may be destroyed while the result is kept.
+
+```rust
+if let Ok(component) = hit.get_component().checked() {
+    let actor = component.get_owner();
+}
+```
+
+## Engine interfaces
+
+An engine function or property that takes an interface (`TScriptInterface<IBlendableInterface>` in C++) takes a `UObjectRef` of the interface class; `cast` gives one from any object that implements it, natively or in a Blueprint:
+
+```rust
+let blendable = material.cast::<BlendableInterface>()?;
+volume.add_or_update_blendable(blendable, Some(1.0));
+```
+
+A function that takes any interface (`FScriptInterface`, such as `KismetSystemLibrary::conv_interface_to_object`) takes a `UObjectRef<Object>`.
+
 ## Classes: SubclassOf
 
 A class is not an object reference. `SubclassOf<T>` is Unreal's `TSubclassOf<T>`, a class that is `T` or derives from it:

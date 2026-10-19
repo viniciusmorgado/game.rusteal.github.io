@@ -26,6 +26,23 @@ A build also brings an older project's Rust workspace up to date when the layout
 
 Rusteal is in early development, and its API changes between versions. Commit your project before running `rusteal upgrade`, so the changes it makes, and the compile errors your code may get from a changed API, can be reviewed in a diff.
 
+When the versions it crosses change an API your code may use, `rusteal upgrade` lists what changed before it builds, and the compiler points at each line to change.
+
+## Changes by version
+
+### 0.10
+
+- **Engine soft and weak references have their own types.** An engine `TSoftObjectPtr<T>` is a `SoftObjectRef<T>` and an engine `TWeakObjectPtr<T>` a `TWeakObjectPtr<T>`, in properties, struct fields, function parameters and returns; they were `UObjectRef<T>`. A soft reference keeps its path when the asset is not loaded, so a function such as `KismetSystemLibrary::load_asset_blocking` takes a path. See [Object references](../engine_api/object_refs.md#engine-soft-and-weak-references).
+
+  ```rust
+  // before
+  let component = hit.get_component();
+  // now: a TWeakObjectPtr, checked() resolves it as it does for UObjectRef
+  let component = hit.get_component().checked()?;
+  ```
+
+- **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:
