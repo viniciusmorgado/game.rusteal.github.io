@@ -7,7 +7,7 @@
 | `bool`, `uint8`, `int32`, `int64`, `float`, `double` | `bool`, `u8`, `i32`, `i64`, `f32`, `f64` | |
 | `FString` | `String` (as a property or a return value), `&str` (as an argument) | |
 | `FName` | `FName` (properties, Rust code), `FNameHandle` (engine arguments and returns) | `FName::new("x").handle()`, `FName::from(handle)` |
-| `FText` | `&str` (as an argument), `String` (as a return value) | |
+| `FText` | `Text` (since 0.10; arguments take `impl Into<Text>`, so a `&str` works) | keeps its localization; see [Text and localization](../engine_api/text.md) |
 | `UObject*`, `TObjectPtr<T>` | `UObjectRef<T>` | a handle; see [Object references](../engine_api/object_refs.md) |
 | `TSubclassOf<T>` | `SubclassOf<T>` | a class |
 | `TScriptInterface<IFoo>` | `ScriptInterface<dyn Foo>` | an object implementing a `#[uinterface]`; `object.interface::<dyn Foo>()` (after 0.7.0) |

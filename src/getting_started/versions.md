@@ -50,6 +50,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Engine structs read from the engine are copies Rust owns.** A struct a function returns or a property gives, `OwnedStruct<T>`, is a complete copy, arrays and strings included; dropping it frees them, and `clone()` copies them.
 
+- **Engine `FText` is `Text`,** which keeps its localization ([Text and localization](../engine_api/text.md)). Functions take `impl Into<Text>`, so `set_text("Game over")` still works; what gave a `String` gives a `Text`: `to_string()` for the string. An `FText` parameter with a default value is a required one.
+
 - **Engine soft class references are bound,** as `SoftClassRef<T>`: `KismetSystemLibrary::load_class_asset_blocking(&SoftClassRef::new("/Script/Engine.StaticMeshActor"))`.
 
 - **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).

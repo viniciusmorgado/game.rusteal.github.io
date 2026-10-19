@@ -62,6 +62,7 @@
 
 - [Object references](./engine_api/object_refs.md)
 - [Calling the engine](./engine_api/calling.md)
+- [Text and localization](./engine_api/text.md)
 - [Spawning actors](./engine_api/spawning.md)
 - [Assets and objects](./engine_api/assets.md)
 - [Timers](./engine_api/timers.md)
