@@ -13,6 +13,7 @@
 | `TScriptInterface<IFoo>` | `ScriptInterface<dyn Foo>` | an object implementing a `#[uinterface]`; `object.interface::<dyn Foo>()` (after 0.7.0) |
 | `TScriptInterface<IBlendableInterface>` (an engine interface) | `UObjectRef<BlendableInterface>` | `object.cast::<BlendableInterface>()`; `FScriptInterface` is `UObjectRef<Object>` (0.10) |
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path; the engine's too since 0.10 |
+| `TSoftClassPtr<T>` | `SoftClassRef<T>` | a class by path, such as a Blueprint not loaded yet; engine properties and functions (0.10) |
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10 |
 | A struct (`FVector`, `FHitResult`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait |
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |

@@ -92,6 +92,7 @@ The engine's own properties and functions use the same types as your classes:
 | Engine C++ | Rust | Reading it |
 |---|---|---|
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | `path()`; `get()` gives the object if it is loaded, `load_synchronous()` loads it; `checked()` gives the loaded object or an error |
+| `TSoftClassPtr<T>` | `SoftClassRef<T>` | `path()`; `get()` gives the class as a `SubclassOf<T>` if it is loaded, `load_synchronous()` loads it |
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | `get()` gives `Some(object)` while it exists, `None` once it is destroyed; `checked()` gives it or an error |
 
 A soft reference keeps its path even when nothing is loaded, so functions that take one take a path:
