@@ -48,6 +48,10 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
   KismetGuidLibrary::invalidate_guid(&mut guid);
   ```
 
+- **Engine arrays, maps and sets of soft references hold `SoftObjectRef<T>`,** with their paths; they held the loaded objects, as `UObjectRef<T>`.
+
+- **Rust properties of every type:** the other integers, `Text`, `TWeakObjectPtr<T>`, `SoftClassRef<T>`, `ScriptInterface<dyn I>`, `UeMap<K, V>`, `UeSet<T>`, arrays of `String`, `Text`, soft and weak references; `meta(...)` and doc comment tooltips. See [Properties](../classes/properties.md).
+
 - **Every engine struct is an `OwnedStruct<T>`.** Those with no `StaticStruct` in C++ (`FBox`, `FIntPoint`, `FTimespan`, `FPlatformUserId`, the engine's `NoExportTypes`) were taken and given as a `*const u8`; they are `OwnedStruct<T>` like the others:
 
   ```rust
