@@ -63,6 +63,16 @@ let all: Vec<_> = tags.to_vec()?;
 
 The getter of a struct property (`OwnedStruct<FVector>`) returns a copy; change it and set it back.
 
+A `UeMap` or a `UeSet` is a view too, as a `UeArray` is:
+
+```rust
+let scores = self.scores();
+scores.add(&"Ada".to_string(), &3)?;
+let ada = scores.find(&"Ada".to_string())?;
+```
+
+The setter of a `Text` takes a `&str`, a `String` or a `Text` (`self.set_caption("Game over")`); that of an interface takes an `Option`, `None` to clear it, and its getter gives one.
+
 ## Specifiers
 
 | Specifier | What it does |
@@ -83,11 +93,20 @@ Any other argument is a compile error.
 
 | Argument | What it does |
 |---|---|
-| `default = <value>` | The property's default value, for scalars and engine enums: `default = 25.0`, `default = true`, `default = ECollisionChannel::ECC_Pawn`, or a constant (`default = model::MAX_HP`). |
+| `default = <value>` | The property's default value, for numbers, `bool`s, enums, `String`, `FName` and `Text`: `default = 25.0`, `default = true`, `default = ECollisionChannel::ECC_Pawn`, `default = "Hero"`, or a constant (`default = model::MAX_HP`). |
 | `category = "..."` | The category it is listed under in the **Details** panel. `"Combat|Ranged"` makes a subcategory. |
 | `name = "..."` | The Unreal name, when the field's name in PascalCase is not the one you want. |
+| `meta(...)` | Property metadata, as C++'s `meta = (...)`: `meta(ClampMin = 0, ClampMax = 100, Units = "cm")`, `meta(EditCondition = "bCanFly")`, `meta(MultiLine)` for a flag. |
 
-`default` is for scalars and enums. Objects, classes, arrays and structs get their defaults in [Class defaults](class_defaults.md) or in a Blueprint child.
+`default` is for those types. Objects, classes, containers and structs get their defaults in [Class defaults](class_defaults.md) or in a Blueprint child.
+
+A doc comment on the field is its tooltip in the editor, as a C++ comment is (a `ToolTip` in `meta` wins):
+
+```rust
+/// Seconds before the trap fires again.
+#[uproperty(EditAnywhere, category = "Trap", meta(ClampMin = 0.1, Units = "s"))]
+cooldown: f32,
+```
 
 ## Names
 
@@ -107,17 +126,21 @@ The Unreal name is what Blueprints, ini files, data tables and editor Python see
 
 | Rust type | Unreal type |
 |---|---|
-| `bool`, `u8`, `i32`, `i64`, `f32`, `f64` | `bool`, `uint8`, `int32`, `int64`, `float`, `double` |
+| `bool`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` | `bool`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`, `float`, `double` |
 | `String` | `FString` |
 | `FName` | `FName` |
+| `Text` | `FText`: text shown to the player, which can be translated (see [Text and localization](../engine_api/text.md)) |
 | An engine enum (`ECollisionChannel`, `ETraceTypeQuery`...) or a `#[uenum]` of yours | that enum |
 | `UObjectRef<T>` | `TObjectPtr<T>`: an object or an asset |
 | `SubclassOf<T>` | `TSubclassOf<T>`: a class, such as a Blueprint to spawn |
 | `SoftObjectRef<T>` | `TSoftObjectPtr<T>`: an asset by path, loaded on demand |
+| `SoftClassRef<T>` | `TSoftClassPtr<T>`: a class by path, such as a Blueprint not loaded yet |
+| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>`: an object the property does not keep alive |
+| `ScriptInterface<dyn I>` | `TScriptInterface<I>`: an object implementing a `#[uinterface]` (see [Interfaces](interfaces.md)) |
 | `OwnedStruct<T>` | a struct: `FVector`, `FLinearColor`, `FTransform`, `FDataTableRowHandle`, a `#[ustruct]` of yours |
-| `UeArray<T>` of the scalars, objects, classes, `FName` or structs (`UeArray<OwnedStruct<FLinearColor>>`) | `TArray<T>` |
-
-Maps and sets (`TMap`, `TSet`) cannot be declared yet; two arrays side by side, or a Rust-only `HashMap`, do the job meanwhile.
+| `UeArray<T>` of the numbers, objects, classes, soft and weak references, `FName`, `String`, `Text` or structs (`UeArray<OwnedStruct<FLinearColor>>`) | `TArray<T>` |
+| `UeMap<K, V>`, keys of the numbers, objects, classes, `FName` or `String`, values of what an array holds | `TMap<K, V>` |
+| `UeSet<T>` of what a map's keys are | `TSet<T>` |
 
 ## Fields only Rust sees
 

@@ -21,8 +21,8 @@
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |
 | Your enum | a `#[uenum]` | |
 | `TArray<T>` | `UeArray<T>` (a property), `Vec<T>` or `&[T]` (engine arguments and returns) | |
-| `TMap<K, V>` | `UeMap<K, V>` | engine properties only |
-| `TSet<T>` | `UeSet<T>` | engine properties only |
+| `TMap<K, V>` | `UeMap<K, V>` | a property; yours too since 0.10 |
+| `TSet<T>` | `UeSet<T>` | a property; yours too since 0.10 |
 | An output parameter | part of the returned tuple; in an event, `UStructRef<T>` or `OutRef<T>` | |
 
 ## Math
