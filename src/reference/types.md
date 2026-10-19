@@ -15,6 +15,7 @@
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path; the engine's too since 0.10 |
 | `TSoftClassPtr<T>` | `SoftClassRef<T>` | a class by path, such as a Blueprint not loaded yet; engine properties and functions (0.10) |
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10 |
+| `TOptional<T>` | `Option<T>` | engine properties and struct fields of bools, numbers, enums, structs and objects (0.10) |
 | A struct (`FVector`, `FHitResult`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait |
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |
 | Your enum | a `#[uenum]` | |
