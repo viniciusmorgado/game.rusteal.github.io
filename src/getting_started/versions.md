@@ -50,7 +50,7 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Engine structs read from the engine are copies Rust owns.** A struct a function returns or a property gives, `OwnedStruct<T>`, is a complete copy, arrays and strings included; dropping it frees them, and `clone()` copies them.
 
-- **Engine soft class references are bound,** as `SoftClassRef<T>`: `KismetSystemLibrary::load_class_asset_blocking(&SoftClassRef::new("/Game/BP_Enemy.BP_Enemy_C"))`.
+- **Engine soft class references are bound,** as `SoftClassRef<T>`: `KismetSystemLibrary::load_class_asset_blocking(&SoftClassRef::new("/Script/Engine.StaticMeshActor"))`.
 
 - **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).
 

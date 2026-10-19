@@ -98,8 +98,8 @@ The engine's own properties and functions use the same types as your classes:
 A soft reference keeps its path even when nothing is loaded, so functions that take one take a path:
 
 ```rust
-let music = KismetSystemLibrary::load_asset_blocking(&SoftObjectRef::new(
-    "/Game/Audio/Boss.Boss",
+let material = KismetSystemLibrary::load_asset_blocking(&SoftObjectRef::new(
+    "/Engine/EngineMaterials/DefaultMaterial.DefaultMaterial",
 ));
 ```
 
