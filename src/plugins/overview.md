@@ -7,7 +7,7 @@ A Rusteal plugin is an Unreal plugin whose code is a Rust library of its own, lo
 | `runtime` | games and the editor | gameplay systems, anything a packaged game needs |
 | `editor` | the editor only | tools: menus, asset validation, editor scripting |
 
-A runtime plugin can also have an editor library next to its runtime one: the gameplay system and its editor tools in one plugin (see [A runtime and an editor library](new_plugin.md#a-runtime-and-an-editor-library)).
+An editor plugin can also be packaged for projects without Rusteal, Blueprint and C++ ones, carrying what it needs from Rusteal inside it (see [Editor tools for any project](standalone.md)). A runtime plugin can also have an editor library next to its runtime one: the gameplay system and its editor tools in one plugin (see [A runtime and an editor library](new_plugin.md#a-runtime-and-an-editor-library)).
 
 Everything in [Classes](../classes/uclass.md), [The engine API](../engine_api/object_refs.md) and [Systems](../systems/subsystems.md) applies to a plugin's code: classes, properties, functions, components, delegates and interfaces are written the same way.
 
