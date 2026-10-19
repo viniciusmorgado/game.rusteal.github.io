@@ -48,6 +48,13 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
   KismetGuidLibrary::invalidate_guid(&mut guid);
   ```
 
+- **Every engine struct is an `OwnedStruct<T>`.** Those with no `StaticStruct` in C++ (`FBox`, `FIntPoint`, `FTimespan`, `FPlatformUserId`, the engine's `NoExportTypes`) were taken and given as a `*const u8`; they are `OwnedStruct<T>` like the others:
+
+  ```rust
+  let span = KismetMathLibrary::from_minutes(1.5);
+  let seconds = KismetMathLibrary::get_total_seconds(&span);
+  ```
+
 - **Engine structs read from the engine are copies Rust owns.** A struct a function returns or a property gives, `OwnedStruct<T>`, is a complete copy, arrays and strings included; dropping it frees them, and `clone()` copies them.
 
 - **Engine `FText` is `Text`,** which keeps its localization ([Text and localization](../engine_api/text.md)). Functions take `impl Into<Text>`, so `set_text("Game over")` still works; what gave a `String` gives a `Text`: `to_string()` for the string. An `FText` parameter with a default value is a required one.
