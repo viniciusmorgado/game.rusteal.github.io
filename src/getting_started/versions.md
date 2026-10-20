@@ -54,6 +54,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Rust functions of every type:** a `#[ufunction]`, a Blueprint event and a `#[udelegate]` take and return what a property holds, with `Vec<T>`, `HashMap<K, V>` and `HashSet<T>` for containers; `&mut T` parameters are out parameters. `BlueprintNativeEvent`, `CallInEditor`, `category`, `meta(...)`, doc comment tooltips, static functions and function libraries; single-cast and sparse delegates (`#[udelegate(single)]`, `#[udelegate(sparse)]`). See [Functions](../classes/functions.md) and [Delegates](../engine_api/delegates.md).
 
+- **`#[uclass]`, `#[component]`, `#[uclass_impl]` and `#[class_defaults]` refuse the arguments they do not take,** which they ignored: remove the ones the compiler points at, they did nothing.
+
 - **Every engine struct is an `OwnedStruct<T>`.** Those with no `StaticStruct` in C++ (`FBox`, `FIntPoint`, `FTimespan`, `FPlatformUserId`, the engine's `NoExportTypes`) were taken and given as a `*const u8`; they are `OwnedStruct<T>` like the others:
 
   ```rust
