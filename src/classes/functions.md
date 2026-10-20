@@ -26,16 +26,62 @@ A method marked `#[ufunction]` is a real Unreal function of the class. It is `Bl
 | `#[ufunction]` or `#[ufunction(BlueprintCallable)]` | A function with execution pins in Blueprints, and a function the engine can call by name. |
 | `#[ufunction(BlueprintPure)]` | A function without execution pins: a getter, a query. |
 | `#[ufunction(BlueprintImplementableEvent)]` | An event the Blueprint child implements. The Rust body is empty; calling the method runs the Blueprint's graph. |
-| `#[ufunction(Override)]` | Rust code for an event of the parent class. See [Engine events](events.md). |
+| `#[ufunction(BlueprintNativeEvent)]` | An event with a Rust body that children, Rust or Blueprint, can override. See [Events with a Rust default](#events-with-a-rust-default). |
+| `#[ufunction(Override)]` | Rust code for an event of the parent class, the engine's or a Rust parent's `BlueprintNativeEvent`. See [Engine events](events.md). |
 | `#[ufunction(Exec)]` | A console command too. See [Console commands and variables](../systems/console.md). |
 
-`name = "..."` gives the Unreal name when the method's name in PascalCase is not it. Any other argument is a compile error.
+The other arguments:
+
+| Argument | What it does |
+|---|---|
+| `name = "..."` | The Unreal name, when the method's name in PascalCase is not it. |
+| `CallInEditor` | A button in the **Details** panel of the class's instances, in the editor; for a function with no parameters. |
+| `category = "..."` | The category the function is listed under in the Blueprint's **Palette** and the **Details** panel. `"Combat|Ranged"` makes a subcategory. |
+| `meta(...)` | Function metadata, as C++'s `meta = (...)`: `meta(Keywords = "reset clear")`, `meta(DevelopmentOnly)` for a flag. |
+
+A doc comment on the method is its tooltip in the editor (a `ToolTip` in `meta` wins). Any other argument is a compile error.
+
+```rust
+/// Puts every counter back to zero.
+#[ufunction(CallInEditor, category = "Debug")]
+fn reset_counters(&mut self) {
+}
+```
 
 ## Parameters and return values
 
-A function takes scalars (`bool`, `u8`, `i32`, `i64`, `f32`, `f64`), enums (engine enums and [`#[uenum]`s](enums.md)), objects (`UObjectRef<T>`), classes (`SubclassOf<T>`) and structs (`UStructRef<T>`, a reference into the call's parameters; `to_owned()` keeps a copy), and returns a scalar, an enum, an object or a class. A `BlueprintImplementableEvent` takes structs as `&OwnedStruct<T>`. An `Override` of an engine event that returns a struct, such as an input modifier's `ModifyRaw`, returns an `OwnedStruct<T>`.
+A function takes and returns every type a [`#[uproperty]`](properties.md) holds: scalars (`bool`, every integer, `f32`, `f64`), `String`, `FName`, `Text`, enums (engine enums and [`#[uenum]`s](enums.md)), objects (`UObjectRef<T>`), classes (`SubclassOf<T>`), soft and weak references, interfaces (`Option<ScriptInterface<dyn I>>`, `None` for no object), and structs (`OwnedStruct<T>`, a copy). Containers are Rust's: `Vec<T>`, `HashMap<K, V>` and `HashSet<T>`, copied in and out of the engine's arrays, maps and sets.
 
-Strings and arrays are not function parameters yet. A Blueprint that needs to pass text to Rust can set a `String` property and call a function that reads it.
+```rust
+#[ufunction(BlueprintPure)]
+fn count_words(&self, words: Vec<String>) -> HashMap<String, i32> {
+    let mut counts = HashMap::new();
+
+    for word in words {
+        *counts.entry(word).or_insert(0) += 1;
+    }
+
+    counts
+}
+```
+
+A function may take a struct the engine lends as `UStructRef<T>`, a reference into the call's parameters (`to_owned()` keeps a copy); it returns structs as `OwnedStruct<T>`. A `BlueprintImplementableEvent` takes structs as `&OwnedStruct<T>` or `OwnedStruct<T>`.
+
+### Out parameters
+
+A `&mut T` parameter is an output: Blueprints show it as an output pin next to the return value, and C++ passes it by reference. The function receives the value the caller's variable holds (a Blueprint passes the type's default) and writes it:
+
+```rust
+#[ufunction]
+fn split_name(&self, full: String, first: &mut String, rest: &mut Vec<String>) -> bool {
+    let mut words = full.split(' ').map(String::from);
+    *first = words.next().unwrap_or_default();
+    *rest = words.collect();
+    !first.is_empty()
+}
+```
+
+Called from Rust, it takes `&mut` variables, as any Rust function does. Blueprint events have no out parameters, and an `Override` of an engine event takes the engine's as `OutRef<T>` (see [Engine events](events.md)).
 
 ## Names
 
@@ -46,6 +92,64 @@ The Unreal name is the method's name in PascalCase: `fire` is `Fire`, `do_jump_s
 fn spawn_npc(&mut self) {
 }
 ```
+
+## Events with a Rust default
+
+**The goal:** an event with Rust code that runs by default, which a child class, Rust or Blueprint, can replace.
+
+```rust
+#[uclass_impl]
+impl Door {
+    #[ufunction(BlueprintNativeEvent)]
+    fn can_open(&self, by: UObjectRef<Pawn>) -> bool {
+        !self.locked()
+    }
+}
+```
+
+This is C++'s `BlueprintNativeEvent` with its `_Implementation`. The macro renames the body to `can_open_implementation`, and `can_open` calls the event: it runs the child's override when there is one, and the body otherwise. Rust code calls `self.can_open(pawn)`; `can_open_implementation` runs this class's body only, skipping any override.
+
+A Rust child overrides it with `#[ufunction(Override)]` and the same signature:
+
+```rust
+#[uclass(parent = Door)]
+pub struct VaultDoor {}
+
+#[uclass_impl]
+impl VaultDoor {
+    #[ufunction(Override)]
+    fn can_open(&self, by: UObjectRef<Pawn>) -> bool {
+        self.has_code(by)
+    }
+}
+```
+
+In a Blueprint child:
+
+1. In the **My Blueprint** panel, hover over **Functions** and click the **Override** dropdown.
+2. Select **Can Open**.
+3. To run the Rust code too, right-click the new node and select **Add Call to Parent Function**.
+4. Click **Compile**, then **Save**.
+
+## Static functions and function libraries
+
+A `#[ufunction]` with no `self` is static: Blueprints call it without a target, and Rust calls it as an associated function, `Turret::max_range()`. A class whose parent is `BlueprintFunctionLibrary` is a function library, C++'s `UBlueprintFunctionLibrary`: a set of static functions any Blueprint can call.
+
+```rust
+#[uclass(parent = BlueprintFunctionLibrary)]
+pub struct DamageLibrary {}
+
+#[uclass_impl]
+impl DamageLibrary {
+    /// The damage left after the armor takes its share.
+    #[ufunction(BlueprintPure, category = "Damage")]
+    fn after_armor(damage: f32, armor: f32) -> f32 {
+        damage * 100.0 / (100.0 + armor.max(0.0))
+    }
+}
+```
+
+In any Blueprint, right-click the graph and search for **After Armor**. Events are never static: they take `&self` or `&mut self`.
 
 ## Functions the engine calls by name
 

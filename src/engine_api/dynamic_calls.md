@@ -16,12 +16,22 @@ let opened: bool = result.get("ReturnValue")?;
 | Method | What it does |
 |---|---|
 | `DynamicCall::new(&object, "Function")` | Finds the function on the object's class, or `Err(FunctionNotFound)`. |
-| `call.set("Param", value)` | Sets a parameter by its Unreal name. |
+| `call.set("Param", value)` | Sets a scalar parameter by its Unreal name. |
+| `call.set_value("Param", &value)` | Sets a parameter of any type a [`#[ufunction]`](../classes/functions.md#parameters-and-return-values) takes: a `String`, a `Text`, a `Vec<T>`, a `HashMap<K, V>`, an `OwnedStruct<T>`, a soft reference. |
 | `call.set_struct("Param", &owned_struct)` | Sets a struct parameter. |
 | `call.call()` | Calls it, and returns the result. |
-| `result.get::<T>("Name")` | Reads the return value (`"ReturnValue"`) or an out parameter. |
+| `result.get::<T>("Name")` | Reads a scalar return value (`"ReturnValue"`) or out parameter. |
+| `result.value::<T>("Name")` | Reads a return value or out parameter of any type `set_value` takes. |
 
-Values are passed as they are in memory: `bool`, numbers, `f32` for `float`, `f64` for `double`, an object's handle (`object.raw()`), an `FName`'s handle.
+`set` and `get` pass values as they are in memory: `bool`, numbers, `f32` for `float`, `f64` for `double`, an object's handle (`object.raw()`), an `FName`'s handle. `set_value` and `value` (since 0.10) convert, as a function's parameters do:
+
+```rust
+let mut call = DynamicCall::new(&quest_log, "AddEntry")?;
+call.set_value("Title", &Text::from("The lost key"))?;
+call.set_value("Tags", &vec![FName::new("Main")])?;
+let result = call.call()?;
+let entries: Vec<String> = result.value("Entries")?;
+```
 
 ## Use case: a function of a Blueprint
 

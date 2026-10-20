@@ -74,15 +74,25 @@ On a method in a `#[uclass_impl]` block.
 | (none), `BlueprintCallable` | A function with execution pins, callable by name. |
 | `BlueprintPure` | A function without execution pins. |
 | `BlueprintImplementableEvent` | An event the Blueprint child implements; empty body. |
+| `BlueprintNativeEvent` | An event with a Rust body children can override. |
 | `Override` | An event of the parent class implemented in Rust. |
 | `Exec` | Also a console command (with the default kind or `BlueprintPure`). |
+| `CallInEditor` | A button in the Details panel, in the editor. |
 | `name = "Name"` | The Unreal name. |
+| `category = "..."` | The category in the Palette and the Details panel. |
+| `meta(...)` | Function metadata, as C++'s `meta = (...)`. |
 
-`Override`, `BlueprintPure` and `BlueprintImplementableEvent` exclude each other. See [Functions](../classes/functions.md) and [Engine events](../classes/events.md).
+`Override`, `BlueprintPure`, `BlueprintImplementableEvent` and `BlueprintNativeEvent` exclude each other. A doc comment is the tooltip; a method with no `self` is a static function. See [Functions](../classes/functions.md) and [Engine events](../classes/events.md).
 
-## `#[udelegate]` and `#[udelegate(name = "Name")]`
+## `#[udelegate]`
 
-On a method with an empty body in a `#[uclass_impl]` block: a multicast delegate, assignable from Blueprints. Calling it broadcasts; `<name>_add(closure)` and `<name>_add_ufunction(&target, "Function")` bind Rust listeners. See [Delegates](../engine_api/delegates.md).
+On a method with an empty body in a `#[uclass_impl]` block: a multicast delegate, assignable from Blueprints. Calling it broadcasts; `<name>_add(closure)` and `<name>_add_ufunction(&target, "Function")` bind Rust listeners.
+
+| Argument | What it does |
+|---|---|
+| `name = "Name"` | The Unreal name. |
+| `sparse` | A sparse multicast delegate: one byte in the object until it is bound. |
+| `single` | A single-cast delegate: one binding, with `<name>_bind(closure)` and `<name>_bind_ufunction(&target, "Function")`; calling it does nothing when it is unbound. | See [Delegates](../engine_api/delegates.md).
 
 ## `#[class_defaults]`
 

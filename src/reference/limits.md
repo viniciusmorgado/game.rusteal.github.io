@@ -14,8 +14,6 @@ What Rusteal does not do yet, and what to do meanwhile.
 
 | Not yet | Meanwhile |
 |---|---|
-| `TMap` and `TSet` properties | Two `UeArray`s side by side, or a Rust-only `HashMap`. |
-| `String`, arrays and `FName` as `#[ufunction]` parameters | A property the caller sets before the call. |
 | Network replication (`Replicated`, RPCs) | Single player and local multiplayer. |
 | Implementing a C++-only interface | Interfaces whose functions Blueprints can implement. |
 

@@ -52,6 +52,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Rust properties of every type:** the other integers, `Text`, `TWeakObjectPtr<T>`, `SoftClassRef<T>`, `ScriptInterface<dyn I>`, `UeMap<K, V>`, `UeSet<T>`, arrays of `String`, `Text`, soft and weak references; `meta(...)` and doc comment tooltips. See [Properties](../classes/properties.md).
 
+- **Rust functions of every type:** a `#[ufunction]`, a Blueprint event and a `#[udelegate]` take and return what a property holds, with `Vec<T>`, `HashMap<K, V>` and `HashSet<T>` for containers; `&mut T` parameters are out parameters. `BlueprintNativeEvent`, `CallInEditor`, `category`, `meta(...)`, doc comment tooltips, static functions and function libraries; single-cast and sparse delegates (`#[udelegate(single)]`, `#[udelegate(sparse)]`). See [Functions](../classes/functions.md) and [Delegates](../engine_api/delegates.md).
+
 - **Every engine struct is an `OwnedStruct<T>`.** Those with no `StaticStruct` in C++ (`FBox`, `FIntPoint`, `FTimespan`, `FPlatformUserId`, the engine's `NoExportTypes`) were taken and given as a `*const u8`; they are `OwnedStruct<T>` like the others:
 
   ```rust
