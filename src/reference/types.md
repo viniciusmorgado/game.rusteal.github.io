@@ -4,8 +4,8 @@
 
 | C++ | Rust | Notes |
 |---|---|---|
-| `bool`, `uint8`, `int32`, `int64`, `float`, `double` | `bool`, `u8`, `i32`, `i64`, `f32`, `f64` | |
-| `FString` | `String` (as a property or a return value), `&str` (as an argument) | |
+| `bool`, `int8`, `int16`, `int32`, `int64`, `uint8`, `uint16`, `uint32`, `uint64`, `float`, `double` | `bool`, `i8`, `i16`, `i32`, `i64`, `u8`, `u16`, `u32`, `u64`, `f32`, `f64` | the integers other than `u8`, `i32` and `i64` in your classes since 0.10 |
+| `FString` | `String` (properties, returns, your functions' parameters), `&str` (engine arguments) | |
 | `FName` | `FName` (properties, Rust code), `FNameHandle` (engine arguments and returns) | `FName::new("x").handle()`, `FName::from(handle)` |
 | `FText` | `Text` (since 0.10; arguments take `impl Into<Text>`, so a `&str` works) | keeps its localization; see [Text and localization](../engine_api/text.md) |
 | `UObject*`, `TObjectPtr<T>` | `UObjectRef<T>` | a handle; see [Object references](../engine_api/object_refs.md) |
@@ -15,15 +15,19 @@
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path; the engine's too since 0.10 |
 | `TSoftClassPtr<T>` | `SoftClassRef<T>` | a class by path, such as a Blueprint not loaded yet; engine properties and functions (0.10) |
 | `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10 |
+| `TLazyObjectPtr<T>` | `TWeakObjectPtr<T>` | engine properties (0.10) |
 | `TOptional<T>` | `Option<T>` | engine properties and struct fields of bools, numbers, enums, structs and objects (0.10) |
 | A struct (`FVector`, `FHitResult`, `FIntPoint`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait; every engine struct since 0.10 |
 | `FInstancedStruct` | `OwnedStruct<FInstancedStruct>` | holds any struct: `FInstancedStruct::make(&value)`, `get::<T>()`, `set(&value)`, `reset()`, `script_struct()` (0.10) |
 | An enum (`ECollisionChannel`) | the Rust enum of the same name, or its `u8` in some events | |
 | Your enum | a `#[uenum]` | |
-| `TArray<T>` | `UeArray<T>` (a property), `Vec<T>` or `&[T]` (engine arguments and returns) | |
-| `TMap<K, V>` | `UeMap<K, V>` | a property; yours too since 0.10 |
-| `TSet<T>` | `UeSet<T>` | a property; yours too since 0.10 |
-| An output parameter | part of the returned tuple; in an event, `UStructRef<T>` or `OutRef<T>` | |
+| `TArray<T>` | `UeArray<T>` (a property), `Vec<T>` (your functions and delegates; engine returns), `&[T]` (engine arguments) | |
+| `TMap<K, V>` | `UeMap<K, V>` (a property), `HashMap<K, V>` (your functions and delegates) | yours since 0.10 |
+| `TSet<T>` | `UeSet<T>` (a property), `HashSet<T>` (your functions and delegates) | yours since 0.10 |
+| An output parameter | engine functions: part of the returned tuple; your functions: `&mut T` (0.10); an engine event's: `UStructRef<T>` or `OutRef<T>` | |
+| A dynamic delegate (`FScriptDelegate`, `DECLARE_DYNAMIC_DELEGATE`) | a closure, as an engine argument (0.10); yours: `#[udelegate(single)]` | see [Delegates](../engine_api/delegates.md) |
+| A dynamic multicast delegate, sparse or not | the engine's: `on_x().add(closure)`, `on_x().add_ufunction(&target, "Function")`; yours: `#[udelegate]`, `#[udelegate(sparse)]` | |
+| `TFieldPath<T>` | not bound | one engine function takes it (`KismetSystemLibrary::SetFieldPathPropertyByName`) |
 
 ## Math
 

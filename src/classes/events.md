@@ -61,6 +61,9 @@ Overriding `receive_tick` turns the actor's tick on: nothing else is needed.
 | A class | `SubclassOf<T>` |
 | A struct (`FHitResult`, `FVector`) | `UStructRef<T>`, a reference to the struct inside the call; `to_owned()` keeps a copy |
 | An enum | the enum type or its `u8` value |
+| A string, a name or a text | `String`, `FName`, `Text` |
+| An array, a map or a set | `Vec<T>`, `HashMap<K, V>`, `HashSet<T>`, copies |
+| A soft or weak reference, an interface | `SoftObjectRef<T>`, `SoftClassRef<T>`, `TWeakObjectPtr<T>`, `Option<ScriptInterface<dyn I>>` |
 | An output struct | `UStructRef<T>`, written in place |
 | An output scalar or object | `OutRef<T>`, written with `set` |
 
