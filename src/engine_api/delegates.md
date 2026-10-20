@@ -172,7 +172,29 @@ health.on_health_changed_add(|current, max| {
 health.on_health_changed_add_ufunction(&hud.as_ref(), "RefreshHealth")?;
 ```
 
-Its parameters are scalars, objects, classes and structs (as `&OwnedStruct<T>`; a closure receives an `OwnedStruct<T>`). `#[udelegate(name = "...")]` gives the Unreal name when PascalCase is not it.
+Its parameters are the types a [`#[ufunction]`](../classes/functions.md#parameters-and-return-values) takes (since 0.10): scalars, strings, `FName`, `Text`, objects, classes, soft and weak references, interfaces, `Vec<T>`, `HashMap<K, V>`, `HashSet<T>`, and structs as `OwnedStruct<T>` or `&OwnedStruct<T>` (a closure receives an `OwnedStruct<T>`). `#[udelegate(name = "...")]` gives the Unreal name when PascalCase is not it.
+
+### Single-cast and sparse delegates
+
+| Declaration | C++ | What it is |
+|---|---|---|
+| `#[udelegate]` | `DECLARE_DYNAMIC_MULTICAST_DELEGATE` | Any number of listeners, Blueprint or Rust. |
+| `#[udelegate(sparse)]` | `DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE` | The same for its listeners, but it takes one byte in the object until something binds to it, where a multicast delegate takes sixteen. For a delegate on a class with many instances that is rarely bound, such as an event on every projectile or every tree. |
+| `#[udelegate(single)]` | `DECLARE_DYNAMIC_DELEGATE` | One binding at most: binding again replaces it. Calling the method calls the binding, and does nothing when there is none. Blueprints cannot bind to it. |
+
+A single-cast delegate's methods are named `_bind` instead of `_add`:
+
+```rust
+#[udelegate(single)]
+pub fn on_answer(&self, choice: i32, text: String) {}
+```
+
+```rust
+let binding = dialog.on_answer_bind(|choice, text| {
+})?;
+```
+
+Dropping the binding unbinds it, unless a later binding has replaced it; `on_answer_bind_ufunction(&target, "Function")` binds a UFunction instead.
 
 ### In the editor
 
