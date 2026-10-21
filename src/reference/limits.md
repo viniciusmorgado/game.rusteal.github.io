@@ -15,7 +15,10 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Not yet | Meanwhile |
 |---|---|
 | Network replication (`Replicated`, RPCs) | Single player and local multiplayer. |
-| Implementing a C++-only interface | Interfaces whose functions Blueprints can implement. |
+| Implementing a C++-only interface other than `IGameplayTagAssetInterface` without a base of your own | Declare a base that implements it in `rusteal.toml` (see [Engine virtuals](../classes/virtuals.md#c-only-interfaces)). |
+| Overriding a C++ virtual of a class Rusteal has no base for, without declaring one | Declare the base in `rusteal.toml`'s `[[codegen.shims]]`. |
+| Bases declared in a plugin's `rusteal.toml` | Declare them in the project's `rusteal.toml`. |
+| A virtual whose parameters a Blueprint event cannot take (pointers to non-objects, raw C++ enums), unless they are dropped | `drop` them in the base, or leave the virtual out. |
 
 ## Hot reload
 
@@ -39,6 +42,7 @@ What Rusteal does not do yet, and what to do meanwhile.
 | An `async #[ufunction]` returning a value or with out parameters | Set properties of the class before it returns; the Blueprint reads them after the node. |
 | An `async #[ufunction]` taking `&self` or `&mut self` | Take `self` by value (see [What a task holds](../engine_api/async.md#what-a-task-holds)). |
 | Engine latent functions that take or give a container (`KismetSystemLibrary::load_assets`) | `loading::load_all`. |
+| Checking that a `ThreadSafe` function calls only thread-safe engine functions | Call none but the math libraries' from it, as in C++. |
 
 ## Plugins
 

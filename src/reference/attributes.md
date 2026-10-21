@@ -11,6 +11,7 @@ On a struct: the struct is an Unreal class.
 | `parent = Type` | yes | The parent class: an engine class from the bindings, or a Rust class. |
 | `implements = [Trait, "path", ...]` | no | Unreal interfaces the class implements: other interfaces by class path, and `#[uinterface]` traits (after 0.7.0). See [Interfaces](../classes/interfaces.md). |
 | `config = "Category"` | no | The config category its `Config` properties are read from and saved to. See [Project settings and config](../systems/settings.md). |
+| `subobject_class(Name = Type, ...)` | no | Creates subobjects the parent declares as these classes: `subobject_class(CharMoveComp = ClimbingMovement)` (0.10). See [Engine virtuals](../classes/virtuals.md#use-case-a-custom-movement-mode). |
 
 ## `#[uproperty(...)]`
 
@@ -78,6 +79,7 @@ On a method in a `#[uclass_impl]` block.
 | `Override` | An event of the parent class implemented in Rust. |
 | `Exec` | Also a console command (with the default kind or `BlueprintPure`). |
 | `CallInEditor` | A button in the Details panel, in the editor. |
+| `ThreadSafe` | A function the engine may run on a worker thread: it takes the class's `<Class>ThreadSafe` view instead of `self` (0.10). See [Engine virtuals](../classes/virtuals.md#use-case-an-animation-update-on-a-worker-thread). |
 | `name = "Name"` | The Unreal name. |
 | `category = "..."` | The category in the Palette and the Details panel. |
 | `meta(...)` | Function metadata, as C++'s `meta = (...)`. |

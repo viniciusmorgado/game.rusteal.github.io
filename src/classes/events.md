@@ -52,6 +52,8 @@ A C++ class overrides virtual functions (`BeginPlay`, `Tick`, `NotifyHit`). A Ru
 
 Overriding `receive_tick` turns the actor's tick on: nothing else is needed.
 
+A virtual the engine raises no event for, such as `PostInitializeComponents`, a component's `TickComponent` or a widget's `NativeConstruct`, has one on Rusteal's bases: see [Engine virtuals](virtuals.md).
+
 ## Parameter types
 
 | The event takes | The Rust method takes |

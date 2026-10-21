@@ -90,6 +90,25 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Native engine events:** the application's lifecycle, worlds and levels, players logging in and out, and a path following component's finished move. See [Delegates](../engine_api/delegates.md#use-case-an-engine-event-that-is-not-a-delegate).
 
+- **Engine virtuals without an event:** Rusteal's bases (`RustealActor`, `RustealPawn`, `RustealCharacter`, `RustealPlayerController`, `RustealGameModeBase`, `RustealActorComponent`, `RustealSceneComponent`, `RustealUserWidget`, `RustealAnimInstance`, `RustealCharacterMovementComponent`, `RustealCommandlet`, `RustealTaggedActor`) raise C++ virtuals such as `PostInitializeComponents`, `TickComponent`, `NativeConstruct`, `NativeUpdateAnimation` and `PhysCustom` as events; `[[codegen.shims]]` in `rusteal.toml` declares more. See [Engine virtuals](../classes/virtuals.md).
+
+- **A Rust function the engine calls off the game thread does not run,** and the Output Log says so once: the functions the engine runs on a worker thread, the animation's thread-safe update among them, are `#[ufunction(ThreadSafe)]` and take the class's `<Class>ThreadSafe` view. They ran on the worker thread before, racing the game thread.
+
+  ```rust
+  // before
+  #[ufunction(Override)]
+  fn blueprint_thread_safe_update_animation(&mut self, delta_time: f32) {}
+  // now
+  #[ufunction(Override, ThreadSafe)]
+  fn blueprint_thread_safe_update_animation(this: HeroAnimThreadSafe, delta_time: f32) {}
+  ```
+
+- **`subobject_class(Name = Type)`** on `#[uclass]` creates a subobject the parent declares as another class: a character's movement component as a Rust one. See [Engine virtuals](../classes/virtuals.md#use-case-a-custom-movement-mode).
+
+- **Tick functions of their own:** `add_tick_function(&object, ETickingGroup, closure)`, with prerequisites and an interval. See [Engine virtuals](../classes/virtuals.md#a-tick-function-of-its-own).
+
+- **`UStructRef::assign`** writes a whole struct into an event's output parameter.
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:

@@ -82,6 +82,10 @@ Any reflected engine module can be added to `[codegen.modules]` the same way, wi
 DeveloperSettings = { module = "developer_settings", feature = "engine" }
 ```
 
+## Engine virtuals
+
+`[[codegen.shims]]` declares C++ bases that raise an engine class's virtual functions as events a Rust class overrides, built with the project by `rusteal build --all`. See [Engine virtuals](../classes/virtuals.md#bases-of-your-own).
+
 ## The blocklist
 
 A few engine functions are reflected but not exported by the engine, so their wrapper compiles but does not link. The blocklist a new project gets already lists the ones known for the engine version Rusteal targets. If a `rusteal build --all` fails at link time on a wrapper of a new module, add the function to `[codegen.blocklist] functions` as `"Class.Function"` and build again.

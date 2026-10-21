@@ -51,6 +51,7 @@
 - [Components](./classes/components.md)
 - [Class defaults](./classes/class_defaults.md)
 - [Engine events](./classes/events.md)
+- [Engine virtuals](./classes/virtuals.md)
 - [Functions](./classes/functions.md)
 - [Blueprint children](./classes/blueprint_child.md)
 - [Rust classes deriving from Rust classes](./classes/inheritance.md)
