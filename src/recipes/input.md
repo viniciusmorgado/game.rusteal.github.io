@@ -62,7 +62,7 @@ use bindings::engine::{
 };
 use bindings::enhanced_input::{ETriggerEvent, FInputActionValue, InputAction};
 use bindings::prelude::*;
-use rusteal_runtime::runtime::{RustealResult, UObjectRef, UStructRef };
+use rusteal_runtime::runtime::{RustealResult, UObjectRef, UStructRef, method};
 use rusteal_runtime::{uclass, uclass_impl};
 
 #[uclass(parent = Character)]
@@ -85,8 +85,9 @@ impl MyCharacter {
             log::warn!("[MyGame] input binding failed: {e}");
         }
     }
+}
 
-    #[ufunction]
+impl MyCharacter {
     fn r#move(&mut self, value: UStructRef<FInputActionValue>) {
         let axis = value.axis2d();
 
@@ -106,7 +107,6 @@ impl MyCharacter {
         me.add_movement_input(&FVector::from_dvec3(right), Some(axis.x as f32), Some(false));
     }
 
-    #[ufunction]
     fn look(&mut self, value: UStructRef<FInputActionValue>) {
         let axis = value.axis2d();
 
@@ -115,9 +115,7 @@ impl MyCharacter {
             me.add_controller_pitch_input(axis.y as f32);
         }
     }
-}
 
-impl MyCharacter {
     fn bind_input(&self) -> RustealResult<()> {
         let me = self.as_ref();
         let pawn = me.checked()?;
@@ -126,10 +124,20 @@ impl MyCharacter {
             return Ok(());
         }
 
-        bind_action(&me, self.jump_action(), ETriggerEvent::Started, "Jump")?;
-        bind_action(&me, self.jump_action(), ETriggerEvent::Completed, "StopJumping")?;
-        bind_action(&me, self.move_action(), ETriggerEvent::Triggered, "Move")?;
-        bind_action(&me, self.look_action(), ETriggerEvent::Triggered, "Look")?;
+        bind_action(&me, self.jump_action(), ETriggerEvent::Started, move |_| {
+            if let Ok(character) = me.checked() {
+                character.jump();
+            }
+        })?;
+
+        bind_action(&me, self.jump_action(), ETriggerEvent::Completed, move |_| {
+            if let Ok(character) = me.checked() {
+                character.stop_jumping();
+            }
+        })?;
+
+        bind_action(&me, self.move_action(), ETriggerEvent::Triggered, method(self, Self::r#move))?;
+        bind_action(&me, self.look_action(), ETriggerEvent::Triggered, method(self, Self::look))?;
 
         Ok(())
     }
@@ -137,26 +145,39 @@ impl MyCharacter {
 ```
 
 - `receive_restarted` is where a pawn binds input: it runs when a controller possesses the pawn, once the input component exists. It replaces C++'s `SetupPlayerInputComponent`.
-- `bind_action(&pawn, action, trigger, "Function")` binds an action's trigger event to a function by its Unreal name. Engine functions work as well: `"Jump"` and `"StopJumping"` are `ACharacter`'s.
+- `bind_action(&pawn, action, trigger, callback)` (since 0.10) calls `callback` with the action's value each time the trigger event happens. `method(self, Self::r#move)` makes the callback a method of the class, checked by the compiler; a closure calls an engine function, as `jump` and `stop_jumping` above. The method needs no `#[ufunction]`.
 - The value of an action reads as `get_bool()`, `axis1d()`, `axis2d()` or `axis3d()`, by its **Value Type**.
+- `bind_action` returns an `ActionBinding`: the binding lasts as long as the pawn's input component (until the pawn is unpossessed), and `unbind()` removes it sooner.
 
-### What a bound function can take
-
-The function takes nothing, or a leading part of these, in order:
-
-| Parameter | Type | What it is |
-|---|---|---|
-| value | `UStructRef<FInputActionValue>` | the action's value |
-| elapsed seconds | `f32` | how long the action has been evaluated |
-| triggered seconds | `f32` | how long it has been triggered |
-| source action | `UObjectRef<InputAction>` | the action itself |
+A method that takes no value is bound through a closure:
 
 ```rust
-#[ufunction]
-fn charge(&mut self, _value: UStructRef<FInputActionValue>, elapsed_seconds: f32) {
-    let charged = elapsed_seconds >= 1.5;
+let mut interact = method(self, Self::interact);
+bind_action(&me, self.interact_action(), ETriggerEvent::Started, move |_| interact())?;
+```
+
+### More than the value
+
+`bind_action_instance` gives the callback an `ActionInstance`, with the times the action has been evaluated and triggered:
+
+| Field | Type | What it is |
+|---|---|---|
+| `value` | `UStructRef<FInputActionValue>` | the action's value |
+| `elapsed_seconds` | `f32` | how long the action has been evaluated |
+| `triggered_seconds` | `f32` | how long it has been triggered |
+| `action` | `UObjectRef<InputAction>` | the action itself |
+
+```rust
+bind_action_instance(&me, self.charge_action(), ETriggerEvent::Triggered, method(self, Self::charge))?;
+
+fn charge(&mut self, instance: ActionInstance) {
+    let charged = instance.elapsed_seconds >= 1.5;
 }
 ```
+
+### A function a Blueprint defines
+
+`bind_action_by_name(&pawn, action, trigger, "Function")` binds the UFunction with that Unreal name, as the engine binds a Blueprint's input events. The name is checked when the game runs, not when it compiles: it is for a function a Blueprint defines. The function takes nothing, or a leading part of the `ActionInstance` fields above, in order.
 
 ## In the editor
 
@@ -172,7 +193,7 @@ The engine templates already have the input actions (`IA_Move`, `IA_Look`, `IA_J
 
 > **Screenshot:** IMC_Default with the W, A, S, D mappings and their modifiers. *(images/recipes/imc_default.png)*
 
-If nothing moves, the Output Log usually says why: no mapping contexts added, or a function name that does not exist.
+If nothing moves, the Output Log usually says why: no mapping contexts added, or no Enhanced Input component on the actor.
 
 ## Touch controls
 

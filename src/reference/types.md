@@ -24,9 +24,10 @@
 | `TArray<T>` | `UeArray<T>` (a property), `Vec<T>` (your functions and delegates; engine returns), `&[T]` (engine arguments) | |
 | `TMap<K, V>` | `UeMap<K, V>` (a property), `HashMap<K, V>` (your functions and delegates) | yours since 0.10 |
 | `TSet<T>` | `UeSet<T>` (a property), `HashSet<T>` (your functions and delegates) | yours since 0.10 |
+| A latent function (`FLatentActionInfo`) | engine functions: `async`, giving their outputs (0.10); yours: `async #[ufunction]` | see [Async code](../engine_api/async.md) |
 | An output parameter | engine functions: part of the returned tuple; your functions: `&mut T` (0.10); an engine event's: `UStructRef<T>` or `OutRef<T>` | |
 | A dynamic delegate (`FScriptDelegate`, `DECLARE_DYNAMIC_DELEGATE`) | a closure, as an engine argument (0.10); yours: `#[udelegate(single)]` | see [Delegates](../engine_api/delegates.md) |
-| A dynamic multicast delegate, sparse or not | the engine's: `on_x().add(closure)`, `on_x().add_ufunction(&target, "Function")`; yours: `#[udelegate]`, `#[udelegate(sparse)]` | |
+| A dynamic multicast delegate, sparse or not | the engine's: `on_x().add(closure)`, `on_x().add(method(self, Self::x))`, `on_x().next().await`, `on_x().add_ufunction(&target, "Function")`; yours: `#[udelegate]`, `#[udelegate(sparse)]` | |
 | `TFieldPath<T>` | not bound | one engine function takes it (`KismetSystemLibrary::SetFieldPathPropertyByName`) |
 
 ## Math

@@ -112,15 +112,17 @@ impl TriggerSwitch {
 }
 ```
 
-What it drives holds a reference to it, set on each placed actor in the **Details** panel, and binds one of its functions when play begins:
+What it drives holds a reference to it, set on each placed actor in the **Details** panel, and binds one of its methods when play begins:
 
 ```rust
 #[ufunction(Override)]
 fn receive_begin_play(&mut self) {
-    let me = self.as_ref();
-
-    if let Ok(trigger) = TriggerSwitch::from_obj(self.trigger()) {
-        let _ = trigger.trigger_add_ufunction(&me, "Unlock");
+    if let Ok(trigger) = TriggerSwitch::from_obj(self.trigger())
+        && let Err(e) = trigger
+            .trigger_add(method(self, Self::unlock))
+            .map(|binding| binding.detach())
+    {
+        log::warn!("[Interactables] door: {e}");
     }
 }
 
@@ -136,7 +138,7 @@ fn unlock(&mut self) {
 }
 ```
 
-The `interactables` feature has the trigger (`BP_DoorTrigger`), lights (`BP_Light`), a door (`BP_DoorFrame_Unlockable`) and a confetti burst (`BP_ConfettiTrigger`) wired this way.
+`trigger_add` returns a binding that unbinds when dropped; `detach()` keeps it for the door's life. The `interactables` feature has the trigger (`BP_DoorTrigger`), lights (`BP_Light`), a door (`BP_DoorFrame_Unlockable`) and a confetti burst (`BP_ConfettiTrigger`) wired this way.
 
 ## Use case: a door that slides open
 

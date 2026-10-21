@@ -218,20 +218,48 @@ The pistol listens to its grab component's delegates, enables input on itself an
 
 ```rust
 let grabbed = grab.on_grabbed_add(move || {
-    if let Ok(mut pistol) = Pistol::from_obj(me) {
-        let _ = pistol.grabbed();
+    if let Ok(mut pistol) = Pistol::from_obj(me)
+        && let Err(e) = pistol.grabbed()
+    {
+        log::warn!("[VR] pistol grab failed: {e}");
     }
 });
+
+let dropped = grab.on_dropped_add(move || {
+    if let Ok(pistol) = Pistol::from_obj(me)
+        && let Err(e) = pistol.dropped()
+    {
+        log::warn!("[VR] pistol drop failed: {e}");
+    }
+});
+
+for binding in [grabbed, dropped] {
+    match binding {
+        Ok(binding) => binding.detach(),
+        Err(e) => log::warn!("[VR] pistol cannot watch its grab component: {e}"),
+    }
+}
 ```
+
+`on_grabbed_add` returns a binding that unbinds when dropped; `detach()` keeps it for the pistol's life. The input is bound once, the first time the pistol is grabbed, and stays bound; a Rust-private `input_bound: bool` field remembers it:
 
 ```rust
 fn grabbed(&mut self) -> RustealResult<()> {
     let me = self.as_ref();
     let controller = GameplayStatics::get_player_controller(me.upcast_to(), 0);
+
     me.checked()?.enable_input(controller);
 
-    bind_action(&me, self.shoot_left_action(), ETriggerEvent::Started, "ShootLeft")?;
-    bind_action(&me, self.shoot_right_action(), ETriggerEvent::Started, "ShootRight")?;
+    if !self.input_bound() {
+        let mut shoot_left = method(self, Self::shoot_left);
+        let mut shoot_right = method(self, Self::shoot_right);
+
+        bind_action(&me, self.shoot_left_action(), ETriggerEvent::Started, move |_| shoot_left())?;
+        bind_action(&me, self.shoot_right_action(), ETriggerEvent::Started, move |_| shoot_right())?;
+        self.set_input_bound(true);
+    }
+
+    self.hide_hand(true)?;
 
     let subsystem = enhanced_input_subsystem(controller)?.checked()?;
     subsystem.add_mapping_context(self.weapon_context()?, 1, &OwnedStruct::new());
@@ -239,14 +267,19 @@ fn grabbed(&mut self) -> RustealResult<()> {
 }
 ```
 
-The pawn hides the hand through the template's Blueprint Interface, `BPI_PawnAnim`, which the pawn implements (`implements = ["/Game/XRFramework/Blueprints/BPI_PawnAnim.BPI_PawnAnim_C"]`) and the pistol calls on whoever holds it, without knowing its class:
+The pistol hides the hand by calling the pawn's `hide_unhide_hand` on whoever holds it:
 
 ```rust
-let mut call = DynamicCall::new(&owner, "HideUnhideHand")?;
-call.set("bHide", true)?;
-call.set("bRightHand", self.held_by_right()?)?;
-call.call()?;
+fn hide_hand(&self, hide: bool) -> RustealResult<()> {
+    let grab = self.grab()?;
+    let owner = grab.motion_controller_ref().checked()?.get_owner();
+
+    XRPawn::from_obj(owner)?.hide_unhide_hand(hide, self.held_by_right()?);
+    Ok(())
+}
 ```
+
+The pawn also implements the template's Blueprint Interface, `BPI_PawnAnim` (`implements = ["/Game/XRFramework/Blueprints/BPI_PawnAnim.BPI_PawnAnim_C"]`), so a Blueprint object can call **Hide Unhide Hand** on it without knowing its class.
 
 Firing spawns the projectile at the muzzle and plays a haptic effect on the hand holding the pistol:
 

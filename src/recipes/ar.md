@@ -106,7 +106,7 @@ self.set_placeable_object(placeable);
 self.ar_object_spawned();
 ```
 
-`ar_object_spawned` is a `#[udelegate(name = "ARObjectSpawned")]` the main menu binds to show the bottom menu.
+`ar_object_spawned` is a `#[udelegate(name = "ARObjectSpawned")]` the main menu binds to show the bottom menu: `pawn.ar_object_spawned_add(method(self, Self::placed))?.detach()`.
 
 ## Use case: showing the planes the device finds
 
@@ -185,7 +185,7 @@ for row_name in DataTableFunctionLibrary::get_data_table_row_names(table) {
 }
 ```
 
-All the menus derive from a Rust `StylizedUI` widget with a `SwitchStyle` delegate; each binds its own function to it, and the main menu broadcasts the new style to them all. A data table made with a Blueprint struct moves to the Rust struct by filling it again from its JSON export with **Fill Data Table from JSON String**, the Rust struct as its row structure.
+All the menus derive from a Rust `StylizedUI` widget with a `SwitchStyle` delegate; each binds its own method to it with `switch_style_add`, and the main menu broadcasts the new style to them all. A data table made with a Blueprint struct moves to the Rust struct by filling it again from its JSON export with **Fill Data Table from JSON String**, the Rust struct as its row structure.
 
 > **Screenshot:** the ar template's start menu in the editor viewport, with the Begin Scan button. *(images/recipes/ar_menu.png)*
 

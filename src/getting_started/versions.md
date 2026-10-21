@@ -71,6 +71,25 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).
 
+- **`bind_action` takes a closure,** or a method with `method(self, Self::look)`, and returns an `ActionBinding` (`unbind()` stops it); it took the name of a `#[ufunction]`. The by-name version is `bind_action_by_name`, for a function a Blueprint defines. `bind_action_instance` gives the action's value with its elapsed and triggered times. See [Input](../recipes/input.md).
+
+  ```rust
+  // before
+  bind_action(&self.as_ref(), action, ETriggerEvent::Triggered, "Look")?;
+  // now
+  bind_action(&self.as_ref(), action, ETriggerEvent::Triggered, method(self, Self::look))?;
+  ```
+
+- **Engine latent functions are `async`.** `KismetSystemLibrary::delay`, `load_asset`, `move_component_to`, `GameplayStatics::load_stream_level` and the others no longer take an `FLatentActionInfo` and return a future of their outputs: add `.await`, in async code. See [Async code](../engine_api/async.md#the-engines-latent-functions).
+
+- **Async code:** `task::spawn_local` runs a future on the game thread, cancelled with its owner; `task::next_frame`, `task::run_blocking`, `timer::sleep` and `timer::sleep_real` wait in it. `SoftObjectRef::load_async`, `loading::load_all` and `loading::load_primary_asset` load in the background; `http::get` and `http::post` send HTTP requests; every multicast delegate has `next()`; an `async #[ufunction]` is a latent Blueprint node. See [Async code](../engine_api/async.md).
+
+- **Timers with closures:** `timer::set_timer` returns a `TimerHandle` to clear, pause and query it, and frees its closure with the timer, as `k2_set_timer_delegate` now does. See [Timers](../engine_api/timers.md).
+
+- **Methods as callbacks:** `method(self, Self::x)` binds a method of the class to a delegate, a timer or an input action, without `#[ufunction]`. See [Delegates](../engine_api/delegates.md#binding-a-method).
+
+- **Native engine events:** the application's lifecycle, worlds and levels, players logging in and out, and a path following component's finished move. See [Delegates](../engine_api/delegates.md#use-case-an-engine-event-that-is-not-a-delegate).
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:

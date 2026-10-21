@@ -66,6 +66,7 @@
 - [Spawning actors](./engine_api/spawning.md)
 - [Assets and objects](./engine_api/assets.md)
 - [Timers](./engine_api/timers.md)
+- [Async code](./engine_api/async.md)
 - [Traces and overlaps](./engine_api/traces.md)
 - [Delegates](./engine_api/delegates.md)
 - [Dynamic calls](./engine_api/dynamic_calls.md)

@@ -165,6 +165,7 @@ The Blueprint child sets the **Widget Class** of the **Life Bar** component to a
 
 ```rust
 use bindings::umg::{Button, ButtonExt, UserWidget};
+use rusteal_runtime::runtime::method;
 
 #[uclass(parent = UserWidget)]
 pub struct MenuWidget {
@@ -179,12 +180,8 @@ pub struct MenuWidget {
 impl MenuWidget {
     #[ufunction(Override)]
     fn construct(&mut self) {
-        let me = self.as_ref().upcast_to::<UserWidget>();
-
-        for (button, handler) in [(self.restart_button(), "Restart"), (self.exit_button(), "Exit")] {
-            if let Ok(button) = button.checked() {
-                let _ = button.on_clicked().add_ufunction(&me, handler);
-            }
+        if let Err(e) = self.bind_buttons() {
+            log::warn!("[MyGame] the menu buttons are not bound: {e}");
         }
     }
 
@@ -200,7 +197,22 @@ impl MenuWidget {
         KismetSystemLibrary::quit_game(self.as_ref().upcast_to(), UObjectRef::null(), EQuitPreference::Quit, false);
     }
 }
+
+impl MenuWidget {
+    fn bind_buttons(&self) -> RustealResult<()> {
+        for (button, handler) in [
+            (self.restart_button(), method(self, Self::restart)),
+            (self.exit_button(), method(self, Self::exit)),
+        ] {
+            button.checked()?.on_clicked().add(handler)?.detach();
+        }
+
+        Ok(())
+    }
+}
 ```
+
+`on_clicked().add` binds the method itself; it returns a binding that unbinds when dropped, and `detach()` keeps it for the widget's life (see [Delegates](../engine_api/delegates.md)).
 
 A `BindWidget` property is C++'s `UPROPERTY(meta = (BindWidget))`: when the widget is created, it holds the layout's widget of the same name (`RestartButton` for `restart_button`). The Widget Blueprint must have it, with that name and a compatible class, or it does not compile; `BindWidgetOptional` lets the layout leave it out, and the property is then null.
 
@@ -247,7 +259,22 @@ impl MainMenu {
 }
 ```
 
-`BindWidgetAnim` binds the Widget Blueprint's animation of the same name, as `BindWidget` binds a widget; the property is made `Transient`, since the engine sets it on each created widget. To run code when the animation ends, set a timer for `get_end_time()` seconds with `KismetSystemLibrary::k2_set_timer`.
+`BindWidgetAnim` binds the Widget Blueprint's animation of the same name, as `BindWidget` binds a widget; the property is made `Transient`, since the engine sets it on each created widget. To run code when the animation ends, set a timer for its `get_end_time()` seconds with `timer::set_timer` (see [Timers](../engine_api/timers.md)), here calling a `screenshot_done` method of `MainMenu`:
+
+```rust
+use std::time::Duration;
+
+use bindings::umg::WidgetAnimationExt;
+use rusteal_runtime::runtime::{method, timer};
+
+if let Ok(animation) = self.screenshot_show().checked() {
+    let delay = Duration::from_secs_f32(animation.get_end_time().max(0.01));
+
+    if let Err(e) = timer::set_timer(&self.as_ref(), delay, false, method(self, Self::screenshot_done)) {
+        log::warn!("[MyGame] the animation end timer was not set: {e}");
+    }
+}
+```
 
 Template: `ar` (the main menu's screenshot flash and tutorial).
 

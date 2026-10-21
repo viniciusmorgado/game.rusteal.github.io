@@ -82,11 +82,11 @@ On a method in a `#[uclass_impl]` block.
 | `category = "..."` | The category in the Palette and the Details panel. |
 | `meta(...)` | Function metadata, as C++'s `meta = (...)`. |
 
-`Override`, `BlueprintPure`, `BlueprintImplementableEvent` and `BlueprintNativeEvent` exclude each other. A doc comment is the tooltip; a method with no `self` is a static function. See [Functions](../classes/functions.md) and [Engine events](../classes/events.md).
+`Override`, `BlueprintPure`, `BlueprintImplementableEvent` and `BlueprintNativeEvent` exclude each other. A doc comment is the tooltip; a method with no `self` is a static function; an `async fn` taking `self` by value is a latent node (see [Async code](../engine_api/async.md#async-functions-as-blueprint-nodes)). See [Functions](../classes/functions.md) and [Engine events](../classes/events.md).
 
 ## `#[udelegate]`
 
-On a method with an empty body in a `#[uclass_impl]` block: a multicast delegate, assignable from Blueprints. Calling it broadcasts; `<name>_add(closure)` and `<name>_add_ufunction(&target, "Function")` bind Rust listeners.
+On a method with an empty body in a `#[uclass_impl]` block: a multicast delegate, assignable from Blueprints. Calling it broadcasts; `<name>_add(closure)` and `<name>_add_ufunction(&target, "Function")` bind Rust listeners, and `<name>_next()` waits for the next broadcast in async code.
 
 | Argument | What it does |
 |---|---|

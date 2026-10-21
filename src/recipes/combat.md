@@ -72,10 +72,14 @@ For damage in an area, `GameplayStatics::apply_radial_damage` damages every acto
 **The goal:** on death the character stops, falls as a ragdoll, and is removed a few seconds later.
 
 ```rust
+use std::time::Duration;
+
 use bindings::engine::{
-    CharacterExt, CharacterMovementComponentExt, ECollisionEnabled, KismetSystemLibrary,
-    MovementComponentExt, PrimitiveComponentExt
+    CharacterExt, CharacterMovementComponentExt, ECollisionEnabled, MovementComponentExt,
+    PrimitiveComponentExt
 };
+use rusteal_runtime::runtime::method;
+use rusteal_runtime::runtime::timer;
 
 impl Soldier {
     fn die(&mut self) {
@@ -101,12 +105,20 @@ impl Soldier {
 
         self.bp_on_death();
 
-        KismetSystemLibrary::k2_set_timer(me.as_ref().upcast_to(), "RemoveBody", 5.0, false, None, None, None);
+        let removal_timer = timer::set_timer(
+            &self.as_ref(),
+            Duration::from_secs(5),
+            false,
+            method(self, Self::remove_body),
+        )
+        .ok();
+
+        self.set_removal_timer(removal_timer);
     }
 }
 ```
 
-`RemoveBody` is a `#[ufunction]` that calls `k2_destroy_actor`. The Blueprint child implements **BP On Death** for the sound and the effects.
+`remove_body` is a method that calls `k2_destroy_actor`. The timer's handle is kept in a Rust-private field, `removal_timer: Option<TimerHandle>`, and `receive_end_play` clears it if the character leaves play first, as the shooter's NPC does (see [Timers](../engine_api/timers.md)). The Blueprint child implements **BP On Death** for the sound and the effects.
 
 ## Use case: respawning the player
 

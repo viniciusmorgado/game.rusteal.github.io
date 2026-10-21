@@ -30,7 +30,15 @@ What Rusteal does not do yet, and what to do meanwhile.
 
 | Not yet | Meanwhile |
 |---|---|
-| Binding C++-only engine delegates (`UPathFollowingComponent::OnRequestFinished`) | A Blueprint-exposed delegate raised for the same event (`AIController::ReceiveMoveCompleted`). |
+| Binding C++-only engine delegates other than the [native events](../engine_api/delegates.md#use-case-an-engine-event-that-is-not-a-delegate) | A Blueprint-exposed delegate raised for the same event (`AIController::ReceiveMoveCompleted`). |
+
+## Async code
+
+| Not yet | Meanwhile |
+|---|---|
+| An `async #[ufunction]` returning a value or with out parameters | Set properties of the class before it returns; the Blueprint reads them after the node. |
+| An `async #[ufunction]` taking `&self` or `&mut self` | Take `self` by value (see [What a task holds](../engine_api/async.md#what-a-task-holds)). |
+| Engine latent functions that take or give a container (`KismetSystemLibrary::load_assets`) | `loading::load_all`. |
 
 ## Plugins
 

@@ -109,6 +109,13 @@ The audio component's **Sound** is the MetaSound source; any of its inputs is se
 **The goal:** a confetti burst one second after a trigger first fires, and never again.
 
 ```rust
+use std::time::Duration;
+
+use rusteal_runtime::runtime::method;
+use rusteal_runtime::runtime::timer::set_timer;
+
+const CONFETTI_DELAY: Duration = Duration::from_secs(1);
+
 #[ufunction]
 fn trigger_confetti(&mut self) {
     if self.fired() {
@@ -116,7 +123,10 @@ fn trigger_confetti(&mut self) {
     }
 
     self.set_fired(true);
-    KismetSystemLibrary::k2_set_timer(self.as_ref().upcast_to(), "Burst", 1.0, false, None, None, None);
+
+    if let Err(e) = set_timer(&self.as_ref(), CONFETTI_DELAY, false, method(self, Self::burst)) {
+        log::warn!("[Interactables] confetti: {e}");
+    }
 }
 
 #[ufunction]
@@ -127,7 +137,7 @@ fn burst(&mut self) {
 }
 ```
 
-The Niagara component is not auto-activated; `activate(Some(true))` restarts it from the beginning.
+`trigger_confetti` is bound to the trigger's delegate as in [Game flow](game_flow.md#use-case-one-actor-switching-others). The timer is set once and never cleared, so its handle is not kept. The Niagara component is not auto-activated; `activate(Some(true))` restarts it from the beginning.
 
 ## Use case: playing a level sequence
 

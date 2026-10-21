@@ -146,16 +146,31 @@ pub fn start_firing(&mut self) {
 
     match model::pull_trigger(now - self.time_of_last_shot(), self.refire_rate(), self.b_full_auto()) {
         TriggerPull::FireNow => self.fire(),
-        TriggerPull::FireIn(delay) => self.set_refire_timer("Fire", delay),
+        TriggerPull::FireIn(delay) => self.set_refire_timer(method(self, Self::fire), delay),
         TriggerPull::Wait => {}
     }
 }
 
 pub fn stop_firing(&mut self) {
     self.set_is_firing(false);
-    KismetSystemLibrary::k2_clear_timer(self.as_ref().upcast_to(), "Fire");
+    self.clear_refire_timer();
+}
+
+fn set_refire_timer(&mut self, callback: impl FnMut() + Send + 'static, delay: f32) {
+    self.clear_refire_timer();
+
+    let refire_handle = timer::set_timer(&self.as_ref(), Duration::from_secs_f32(delay), false, callback).ok();
+    self.set_refire_handle(refire_handle);
+}
+
+fn clear_refire_timer(&self) {
+    if let Some(refire_handle) = self.refire_handle() {
+        refire_handle.clear();
+    }
 }
 ```
+
+`refire_handle` is a Rust-private field, `Option<TimerHandle>`: one timer at a time waits for the next shot, and `stop_firing` clears it (see [Timers](../engine_api/timers.md)).
 
 `fire` spawns the projectile, plays the firing montage on the holder, adds recoil (`add_controller_pitch_input`), updates the bullet count and sets the timer for the next shot. See `shooter/weapon.rs` in a `first-person --variant shooter` project.
 

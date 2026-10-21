@@ -24,6 +24,8 @@ task::spawn(
 
 Capture `UObjectRef`s, not Rust class values, in the second closure, and turn them back into the class with `from_obj`: the object may have been destroyed while the work ran.
 
+In async code, `task::run_blocking(move || generate_dungeon(seed)).await` does the same in one line, and goes on with the result where it left off. See [Async code](../engine_api/async.md).
+
 ## Using every core
 
 `rayon` spreads work over all cores. Rusteal runs it on the engine's own threads: turn on the runtime's `rayon` feature in the game crate's `Cargo.toml`,

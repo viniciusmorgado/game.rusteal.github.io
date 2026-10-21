@@ -1,6 +1,6 @@
 # Functions
 
-**The goal:** functions Blueprints can call, events Blueprints implement, and functions the engine calls by name (input, timers, delegates).
+**The goal:** functions Blueprints can call, events Blueprints implement, functions the engine calls back (input, timers, delegates), and functions that take time.
 
 ```rust
 #[uclass_impl]
@@ -153,7 +153,9 @@ In any Blueprint, right-click the graph and search for **After Armor**. Events a
 
 ## Functions the engine calls by name
 
-Several engine features call a function by its Unreal name: an input action bound with `bind_action`, a timer set with `k2_set_timer`, a delegate bound with `add_ufunction`. Any `#[ufunction]` works for them:
+Input actions, timers and delegates take a closure or a method in Rust (since 0.10), checked by the compiler: `bind_action(&actor, action, ETriggerEvent::Triggered, method(self, Self::look))`, `timer::set_timer(..., method(self, Self::respawn))`, `delegate.add(method(self, Self::on_hit))`. The method needs no `#[ufunction]`. See [Delegates](../engine_api/delegates.md#binding-a-method) and [Timers](../engine_api/timers.md).
+
+Each one also has a version that calls a function by its Unreal name, for a function a Blueprint defines: `bind_action_by_name`, `KismetSystemLibrary::k2_set_timer`, `add_ufunction`. Any `#[ufunction]` works for them:
 
 ```rust
 #[ufunction]
@@ -163,7 +165,19 @@ fn respawn(&mut self) {
 KismetSystemLibrary::k2_set_timer(self.as_ref().upcast_to(), "Respawn", 3.0, false, None, None, None);
 ```
 
-A name that matches no function is logged with that name. See [Timers](../engine_api/timers.md) and [Delegates](../engine_api/delegates.md).
+A name is checked when the game runs, not when it compiles: one that matches no function is logged with that name.
+
+## Async functions
+
+An `async fn` with `#[ufunction]` (since 0.10) is a latent node in Blueprints, as **Delay** is: its output pin runs when the function finishes. It takes `self` by value and returns nothing. See [Async code](../engine_api/async.md#async-functions-as-blueprint-nodes).
+
+```rust
+#[ufunction]
+async fn open_slowly(self, seconds: f32) {
+    timer::sleep(&self.as_ref(), Duration::from_secs_f32(seconds)).await;
+    self.open();
+}
+```
 
 ## Use case: letting the Blueprint play the effects
 

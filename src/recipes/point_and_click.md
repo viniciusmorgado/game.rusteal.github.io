@@ -14,6 +14,7 @@ use bindings::engine::{
 use bindings::enhanced_input::{
     ETriggerEvent, EnhancedInputLocalPlayerSubsystemExt, InputAction, InputMappingContext
 };
+use rusteal_runtime::runtime::method;
 
 #[uclass(parent = PlayerController)]
 pub struct ClickController {
@@ -102,15 +103,29 @@ impl ClickController {
             .add_mapping_context(self.default_mapping_context(), 0, &OwnedStruct::new());
 
         let click = self.set_destination_click_action();
-        bind_action(&me, click, ETriggerEvent::Started, "OnInputStarted")?;
-        bind_action(&me, click, ETriggerEvent::Triggered, "OnSetDestinationTriggered")?;
-        bind_action(&me, click, ETriggerEvent::Completed, "OnSetDestinationReleased")?;
-        bind_action(&me, click, ETriggerEvent::Canceled, "OnSetDestinationReleased")?;
+        self.bind_input(click, ETriggerEvent::Started, Self::on_input_started)?;
+        self.bind_input(click, ETriggerEvent::Triggered, Self::on_set_destination_triggered)?;
+        self.bind_input(click, ETriggerEvent::Completed, Self::on_set_destination_released)?;
+        self.bind_input(click, ETriggerEvent::Canceled, Self::on_set_destination_released)?;
+
+        Ok(())
+    }
+
+    fn bind_input(
+        &self,
+        action: UObjectRef<InputAction>,
+        trigger_event: ETriggerEvent,
+        handler: fn(&mut Self),
+    ) -> RustealResult<()> {
+        let mut handler = method(self, handler);
+        bind_action(&self.as_ref(), action, trigger_event, move |_| handler())?;
 
         Ok(())
     }
 }
 ```
+
+- The handlers take no input value, so `bind_input` wraps each one, made with `method`, in a closure that ignores the value. A misspelled handler is a compile error.
 
 - `simple_move_to_location` is the Blueprint node **Simple Move to Location**: it pathfinds for the controller's pawn, which needs the `PathFollowingComponent` the controller declares.
 - The project needs the `ai` feature for `bindings::ai` (see [Binding more of the engine](../cli/rusteal_toml.md)), and the level a **Nav Mesh Bounds Volume**.
