@@ -107,6 +107,7 @@
 
 - [Overview](./plugins/overview.md)
 - [A new plugin](./plugins/new_plugin.md)
+- [A plugin's classes in the game](./plugins/game_uses_plugin.md)
 - [Editor tools](./plugins/editor_tools.md)
 - [Packaging a plugin](./plugins/packaging.md)
 - [Editor tools for any project](./plugins/standalone.md)

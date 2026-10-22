@@ -109,6 +109,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **`UStructRef::assign`** writes a whole struct into an event's output parameter.
 
+- **The game uses a plugin's Rust classes:** `bindings::plugins::<plugin>` has the classes of every runtime plugin, read from their sources, with their properties and functions; a game class derives from them, and a plugin's hot reload reloads the game when a parent changed. See [A plugin's classes in the game](../plugins/game_uses_plugin.md).
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:
