@@ -23,4 +23,4 @@ unreal.load_class(None, "/Script/Inventory.InventoryItem")
 
 - **An editor library cannot use its runtime library's Rust types.** In a plugin with both, the editor library reaches the runtime library's classes as Blueprints do, through their Unreal functions; the build refuses an editor crate that depends on the runtime crate.
 - **The game sees a plugin's classes as it sees the engine's** (since 0.10): their properties, functions and events, not their Rust-only fields, and it can derive from them. See [A plugin's classes in the game](game_uses_plugin.md).
-- **Editor UI beyond menus.** Slate UI, details panel customizations, custom asset editors, scripted asset actions, importers and Blueprint nodes are not covered yet.
+- **Part of the editor's UI.** Tabs of Slate widgets, details panel customizations, new asset types and importers are covered (see [Editor UI](editor_ui.md) and [Assets and editor utilities](editor_assets.md)); custom asset editors, editor modes, Interchange pipelines and Blueprint nodes are not yet.

@@ -51,7 +51,9 @@ What Rusteal does not do yet, and what to do meanwhile.
 | An editor library using its runtime library's Rust types | Their Unreal functions: dynamic calls, interfaces, Blueprint classes. |
 | The game using a plugin's Rust-only fields, structs, enums and delegates | Its classes' properties and functions, which the game's bindings have (see [A plugin's classes in the game](../plugins/game_uses_plugin.md)); dynamic calls for the rest. |
 | A plugin using another plugin's Rust classes | Dynamic calls, interfaces, subsystems found by class. |
-| Slate UI, details customizations, asset editors, importers, Blueprint nodes | Editor Utility Widgets in Blueprint calling Rust functions. |
+| Slate lists, trees, combo boxes, images, styles and windows outside tabs | Editor Utility Widgets in Blueprint calling Rust functions. |
+| Property type customizations, custom asset editors, editor modes, Scriptable Tools, Interchange pipelines, Blueprint nodes | Editor Utility Widgets and Blueprint nodes calling Rust functions. |
+| Asset and actor actions and Editor Utility Widgets with a Rust parent (written, not tested) | An `EditorUtilityObject` with a Rust parent, run from a menu entry. |
 
 ## Bindings
 

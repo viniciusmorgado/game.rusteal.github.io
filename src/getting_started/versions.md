@@ -111,6 +111,10 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **The game uses a plugin's Rust classes:** `bindings::plugins::<plugin>` has the classes of every runtime plugin, read from their sources, with their properties and functions; a game class derives from them, and a plugin's hot reload reloads the game when a parent changed. See [A plugin's classes in the game](../plugins/game_uses_plugin.md).
 
+- **Editor UI from Rust:** `slate` builds tabs of text, buttons, check boxes, text and spin boxes and panels, with closures for their values and events; `details::customize_class` customizes a class's details panel, and `details::view` embeds one. See [Editor UI](../plugins/editor_ui.md).
+
+- **Assets and editor utilities:** `RustealFactory` makes a Rust class create new assets and import files; the `editor` template binds Blutility's utility objects, asset and actor actions and utility widgets. See [Assets and editor utilities](../plugins/editor_assets.md).
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:
