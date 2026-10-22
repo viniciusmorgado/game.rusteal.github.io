@@ -9,12 +9,14 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Android and iOS builds (being actively worked on) | Run and test the game in the editor on Linux, macOS or Windows, touch controls included; the `ar` template runs there without an AR session. |
 | Console builds (being actively worked on: what needs no SDK is done) | Linux, macOS and Windows builds; `rusteal package --static` and the habits in [Getting ready for consoles](../shipping/consoles.md). |
 | `rusteal package --static` on Windows and macOS (written, not yet validated) | `--static` on Linux; the default packaging elsewhere. |
+| `rusteal package --server` (written, not yet validated: it needs an engine built from source) | A dedicated server in Play In Editor, or Unreal's packaging of the server target. |
 
 ## Classes
 
 | Not yet | Meanwhile |
 |---|---|
-| Network replication (`Replicated`, RPCs) | Single player and local multiplayer. |
+| Custom network serialization (`NetSerialize`, `FFastArraySerializer`) | A C++ struct with it, used as a Rust property's type. |
+| Server-only or client-only Rust code left out at compile time | Check `KismetSystemLibrary::is_dedicated_server` at run time. |
 | Implementing a C++-only interface other than `IGameplayTagAssetInterface` without a base of your own | Declare a base that implements it in `rusteal.toml` (see [Engine virtuals](../classes/virtuals.md#c-only-interfaces)). |
 | Overriding a C++ virtual of a class Rusteal has no base for, without declaring one | Declare the base in `rusteal.toml`'s `[[codegen.shims]]`. |
 | Bases declared in a plugin's `rusteal.toml` | Declare them in the project's `rusteal.toml`. |

@@ -34,6 +34,9 @@ On a field of a `#[uclass]` or a `#[ustruct]`: the field is an Unreal property.
 | `default = value` | The default value, for scalars, engine enums and `#[uenum]`s (not in a `#[ustruct]`). |
 | `name = "Name"` | The Unreal name. |
 | `category = "Category"` | The category in the Details panel; `"A|B"` for a subcategory. |
+| `Replicated` | Sent by the server to the clients (0.10). See [Multiplayer](../systems/multiplayer.md). |
+| `ReplicatedUsing = on_rep_x` | Replicated, and `on_rep_x` runs on the client when a new value arrives (0.10). |
+| `replication = "OwnerOnly"` | The replication condition, with `Replicated` or `ReplicatedUsing` (0.10). |
 
 See [Properties](../classes/properties.md).
 
@@ -80,6 +83,9 @@ On a method in a `#[uclass_impl]` block.
 | `Exec` | Also a console command (with the default kind or `BlueprintPure`). |
 | `CallInEditor` | A button in the Details panel, in the editor. |
 | `ThreadSafe` | A function the engine may run on a worker thread: it takes the class's `<Class>ThreadSafe` view instead of `self` (0.10). See [Engine virtuals](../classes/virtuals.md#use-case-an-animation-update-on-a-worker-thread). |
+| `Server`, `Client`, `NetMulticast` | A remote function, with `Reliable` or `Unreliable` (0.10). See [Multiplayer](../systems/multiplayer.md#use-case-remote-functions). |
+| `WithValidation = valid_x` | On a `Server` function: `valid_x` checks the call first (0.10). |
+| `BlueprintAuthorityOnly` | Blueprints call it on the server only (0.10). |
 | `name = "Name"` | The Unreal name. |
 | `category = "..."` | The category in the Palette and the Details panel. |
 | `meta(...)` | Function metadata, as C++'s `meta = (...)`. |
