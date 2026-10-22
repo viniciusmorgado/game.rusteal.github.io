@@ -219,6 +219,7 @@ Each `[[codegen.shims]]` in the project's `rusteal.toml` (since 0.10) is a base 
 | `category` | The Blueprint category of the events, `Rusteal|<class>` otherwise. |
 | `constructor` | C++ lines for the base's constructor. |
 | `interfaces` | C++-only interfaces the base implements, each with `name`, `include` and `virtuals`. |
+| `functions` | Static functions of the base, for what only C++ reaches: each with `signature`, `body` (its C++ lines) and `specifiers` (`BlueprintCallable` otherwise). |
 
 A virtual is a string, its declaration, or a table with `signature` and:
 
@@ -228,8 +229,12 @@ A virtual is a string, its declaration, or a table with `signature` and:
 | `order = "before"` | Raises the event before the parent's version runs. |
 | `drop = ["Name"]` | Leaves a parameter out of the event, for a type a Blueprint event cannot take (`ELevelTick`, `FActorComponentTickFunction*`). |
 | `meta = ["BlueprintThreadSafe"]` | Function metadata for the event. |
+| `event_params`, `event_args` | The event's own parameters, as C++ declarations, and the C++ expressions that fill them from the virtual's: for a virtual whose parameter is a C++ struct no Blueprint takes, the event takes its parts (`event_params = ["const FGameplayEffectSpec &EffectSpec"]`, `event_args = ["Data.EffectSpec"]`). |
+| `default = "return true;"` | The C++ body of the event's default implementation, for an event that returns a value or has out parameters when calling the parent's virtual does not fit, as with `event_params`. |
 
-The parameters an event takes are numbers, `bool`, objects and classes, Unreal enums, `FString`, `FName`, `FText` and Unreal structs, by value or by reference. A virtual whose parameters cannot all be passed is refused, and the build says which: drop them, or leave the virtual out. After changing `[[codegen.shims]]`, `rusteal build --all` builds the new base; `rusteal build` says so and builds only Rust.
+The parameters an event takes are numbers, `bool`, objects and classes, Unreal enums, `FString`, `FName`, `FText` and Unreal structs, by value or by reference. A virtual whose parameters cannot all be passed is refused, and the build says which: drop them, map them with `event_params`, or leave the virtual out.
+
+A feature can bring bases of its own: with `gameplay-abilities`, the build adds `RustealAttributeSet` (see [The Gameplay Ability System](../systems/abilities.md)). After changing `[[codegen.shims]]`, `rusteal build --all` builds the new base; `rusteal build` says so and builds only Rust.
 
 ## C++-only interfaces
 

@@ -55,6 +55,13 @@ What Rusteal does not do yet, and what to do meanwhile.
 | Property type customizations, custom asset editors, editor modes, Scriptable Tools, Interchange pipelines, Blueprint nodes | Editor Utility Widgets and Blueprint nodes calling Rust functions. |
 | Asset and actor actions and Editor Utility Widgets with a Rust parent (written, not tested) | An `EditorUtilityObject` with a Rust parent, run from a menu entry. |
 
+## Gameplay frameworks
+
+| Not yet | Meanwhile |
+|---|---|
+| The Gameplay Ability System over the network (prediction, replicated attributes), gameplay cues and execution calculations in Rust | Abilities, effects and attribute sets in single player (see [The Gameplay Ability System](../systems/abilities.md)). |
+| CommonUI, MVVM view models, Game Features, Smart Objects, PCG, MetaSounds and Online Services bindings | Use them from Blueprints; their modules can be listed in `rusteal.toml`'s `[codegen.modules]`, which has not been tried with them yet. |
+
 ## Bindings
 
 | Not yet | Meanwhile |

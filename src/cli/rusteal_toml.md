@@ -66,10 +66,10 @@ When a module comes from an engine plugin (`plugin = "StateTree"`), the build en
 | `slate`, `umg` | `slate_core`, `slate`, `umg` | UMG widgets |
 | `ai` | `ai`, `gameplay_tasks`, `navigation` | AI controllers, perception, behavior trees, EQS, navigation |
 | `state-tree` | `state_tree`, `gameplay_state_tree` | StateTree components, tasks, conditions |
-| `gameplay-tags` | `gameplay_tags` | gameplay tags and containers |
+| `gameplay-tags` | `gameplay_tags` | gameplay tags and containers, and tags declared in Rust (see [Gameplay tags](../systems/gameplay_tags.md)) |
 | `niagara` | `niagara` | Niagara systems and components |
 | `chaos-vehicles` | `chaos_vehicles` | Chaos wheeled vehicles: pawns, movement, wheels, engine and gearbox setups |
-| `gameplay-abilities` | `gameplay_abilities` | the Gameplay Ability System |
+| `gameplay-abilities` | `gameplay_abilities` | the Gameplay Ability System, with the `RustealAttributeSet` base (see [The Gameplay Ability System](../systems/abilities.md)) |
 | `level-sequence`, `cinematic`, `movie` | `level_sequence`, `cinematic_camera`, `movie_scene`, `movie_scene_tracks` | Sequencer, cinematic cameras |
 
 `engine` needs `input`, `slate` and `umg`, because the Rusteal plugin links them: keep them in the list.

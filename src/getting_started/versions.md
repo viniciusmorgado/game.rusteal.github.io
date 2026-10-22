@@ -115,6 +115,12 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **Assets and editor utilities:** `RustealFactory` makes a Rust class create new assets and import files; the `editor` template binds Blutility's utility objects, asset and actor actions and utility widgets. See [Assets and editor utilities](../plugins/editor_assets.md).
 
+- **Gameplay tags declared in Rust:** `declare_gameplay_tag` adds a native tag, with its parents, and `gameplay_tag` finds a tag of the project. See [Gameplay tags](../systems/gameplay_tags.md).
+
+- **The Gameplay Ability System in Rust:** with the `gameplay-abilities` feature, `RustealAttributeSet` raises the attribute set's C++ hooks as events, for attribute sets in Rust, next to Rust gameplay effects and abilities. A base in `[[codegen.shims]]` maps an event's parameters (`event_params`, `event_args`), gives it a `default` and has static `functions`, and the game's bindings call the bases' functions. See [The Gameplay Ability System](../systems/abilities.md).
+
+- **An output struct of a Rust event the engine raises keeps its contents.** An event's output struct holding arrays or strings (a gameplay effect spec, a tag container) was copied back over memory it shared with the engine's copy, which could crash; and an unused `#[ufunction]` parameter (`_target`) no longer warns about a non snake case name.
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:

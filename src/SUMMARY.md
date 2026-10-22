@@ -102,6 +102,8 @@
 - [Data assets](./systems/data_assets.md)
 - [Console commands and variables](./systems/console.md)
 - [Work off the game thread](./systems/tasks.md)
+- [Gameplay tags](./systems/gameplay_tags.md)
+- [The Gameplay Ability System](./systems/abilities.md)
 
 # Plugins
 
