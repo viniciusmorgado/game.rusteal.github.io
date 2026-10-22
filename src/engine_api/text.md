@@ -28,9 +28,17 @@ An `FText` parameter with a default value in C++ is a required one in Rust: pass
 
 ## Translating texts
 
-The engine translates a text by its namespace and key, from the localization data of the project. Its text gatherer reads C++ (`LOCTEXT`, `NSLOCTEXT`) and assets, not Rust code: a `Text::localized` is translated when the localization data has an entry with its namespace and key, but the gatherer does not add it.
+The engine translates a text by its namespace and key, from the localization data of the project, which its text gatherer builds from C++ (`LOCTEXT`, `NSLOCTEXT`), assets and String Tables.
 
-The way that needs nothing more is a String Table: an asset the gatherer reads, with a key per text. Create it in the editor (**Content Browser** › **Add** › **Miscellaneous** › **String Table**), add the texts, and read them by the table's id and the key:
+```rust
+use rusteal_runtime::runtime::loctext;
+
+label.set_text(loctext!("Hud", "GameOver", "Game over"));
+```
+
+`loctext!(namespace, key, source)` (since 0.10) is a `Text::localized` the gatherer sees: on every `rusteal build`, Rusteal reads the `loctext!` calls of the game's crate and of its plugins' crates and writes them as `NSLOCTEXT` lines to `Source/<Project>/RustealText.h`, a header nothing includes, which the gather reads with the project's C++. The **Localization Dashboard**'s **Gather Text** then finds them with **Gather from Text Files** searching `Source`, its default. The three arguments are string literals; a `Text::localized` built from variables is translated as well, but the gather does not find it.
+
+The other way is a String Table: an asset the gatherer reads, with a key per text. Create it in the editor (**Content Browser** › **Add** › **Miscellaneous** › **String Table**), add the texts, and read them by the table's id and the key:
 
 ```rust
 let title = KismetTextLibrary::text_from_string_table(table_id, "Title");

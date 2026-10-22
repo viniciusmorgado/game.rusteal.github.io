@@ -119,6 +119,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 - **The Gameplay Ability System in Rust:** with the `gameplay-abilities` feature, `RustealAttributeSet` raises the attribute set's C++ hooks as events, for attribute sets in Rust, next to Rust gameplay effects and abilities. A base in `[[codegen.shims]]` maps an event's parameters (`event_params`, `event_args`), gives it a `default` and has static `functions`, and the game's bindings call the bases' functions. See [The Gameplay Ability System](../systems/abilities.md).
 
+- **Production tooling:** `trace_scope!`, `stat_scope!` and `profiling::memory_tag` put Rust code in Unreal Insights, `stat Rusteal` and the memory tracker (see [Profiling](../iteration/profiling.md)); `automation::register_test` makes Rust automation tests (see [Automation tests](../iteration/automation.md)); `loctext!` texts reach the localization gather (see [Text and localization](../engine_api/text.md#translating-texts)); the `vscode` feature adds tasks and debugger configurations (see [Debugging](../iteration/debugging.md)).
+
 - **Multiplayer:** `#[uproperty(Replicated)]`, `ReplicatedUsing = on_rep_x` and `replication = "..."`; remote functions with `#[ufunction(Server, Client or NetMulticast, Reliable or Unreliable)]`, `WithValidation` and `BlueprintAuthorityOnly`; replicated components and `RustealReplicatedObject` subobjects; push model and Iris; the engine's `Server` functions in the bindings; `rusteal package --server`. See [Multiplayer](../systems/multiplayer.md).
 
 - **Engine functions with unsigned or 16-bit integer parameters** pass them to the engine with the right width; they did not compile.

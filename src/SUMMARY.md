@@ -43,6 +43,9 @@
 - [Console commands](./iteration/console.md)
 - [Logging](./iteration/logging.md)
 - [Testing without the engine](./iteration/testing.md)
+- [Automation tests](./iteration/automation.md)
+- [Profiling](./iteration/profiling.md)
+- [Debugging](./iteration/debugging.md)
 
 # Classes
 
@@ -127,5 +130,6 @@
 - [Attributes](./reference/attributes.md)
 - [Types](./reference/types.md)
 - [CLI reference](./reference/cli.md)
+- [Performance](./reference/performance.md)
 - [Known limits](./reference/limits.md)
 - [Troubleshooting](./reference/troubleshooting.md)
