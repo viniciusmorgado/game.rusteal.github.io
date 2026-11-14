@@ -31,20 +31,16 @@ impl Fighter {
         Ok(())
     }
 
-    fn bind_montage_end(&mut self, anim_instance: UObjectRef<AnimInstance>) -> RustealResult<()> {
+    fn bind_montage_end(&self, anim_instance: UObjectRef<AnimInstance>) -> RustealResult<()> {
         if self.montage_end_bound() {
             return Ok(());
         }
 
-        let character: UObjectRef<Character> = self.as_ref();
-
         anim_instance
             .checked()?
             .on_montage_ended()
-            .add(move |montage, _interrupted| {
-                if let Ok(mut me) = Fighter::from_obj(character)
-                    && montage == me.attack_montage()
-                {
+            .add_method(self, |me: &mut Self, montage, _interrupted| {
+                if montage == me.attack_montage() {
                     me.set_is_attacking(false);
                 }
             })?

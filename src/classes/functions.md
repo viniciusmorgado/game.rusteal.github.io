@@ -169,7 +169,7 @@ A name is checked when the game runs, not when it compiles: one that matches no 
 
 ## Async functions
 
-An `async fn` with `#[ufunction]` (since 0.10) is a latent node in Blueprints, as **Delay** is: its output pin runs when the function finishes. It takes `self` by value and returns nothing. See [Async code](../engine_api/async.md#async-functions-as-blueprint-nodes).
+An `async fn` with `#[ufunction]` (since 0.10) is a latent node in Blueprints, as **Delay** is: its output pin runs when the function finishes. It takes `self` by value, its object parameters as `TWeakObjectPtr<T>`, and returns nothing. See [Async code](../engine_api/async.md#async-functions-as-blueprint-nodes).
 
 ```rust
 #[ufunction]

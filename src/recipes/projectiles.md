@@ -156,7 +156,7 @@ pub fn stop_firing(&mut self) {
     self.clear_refire_timer();
 }
 
-fn set_refire_timer(&mut self, callback: impl FnMut() + Send + 'static, delay: f32) {
+fn set_refire_timer(&mut self, callback: impl FnMut() + 'static, delay: f32) {
     self.clear_refire_timer();
 
     let refire_handle = timer::set_timer(&self.as_ref(), Duration::from_secs_f32(delay), false, callback).ok();
@@ -198,7 +198,8 @@ weapon_mesh.checked()?.k2_attach_to_component(
 The weapon is spawned with the character as its owner, and destroys itself with it:
 
 ```rust
-let weapon = self.as_ref();
+// The owner is destroyed in a later frame: the closure keeps the weapon weak.
+let weapon = TWeakObjectPtr::from_ref(&self.as_ref());
 
 me.get_owner()
     .checked()?

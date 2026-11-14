@@ -25,8 +25,9 @@ impl Progress {}
 const SLOT: &str = "progress";
 
 pub fn save_progress(level: i32) -> RustealResult<()> {
-    let save = GameplayStatics::create_save_game_object(SubclassOf::<Progress>::base().upcast());
-    let mut progress = Progress::from_obj(save)?;
+    let gt = GameThread::current()?;
+    let save = GameplayStatics::create_save_game_object(&gt, SubclassOf::<Progress>::base().upcast());
+    let progress = Progress::from_obj(save)?;
     progress.set_unlocked_level(level);
 
     if !GameplayStatics::save_game_to_slot(save, SLOT, 0) {
@@ -36,17 +37,18 @@ pub fn save_progress(level: i32) -> RustealResult<()> {
     Ok(())
 }
 
-pub fn load_progress() -> Option<Progress> {
+pub fn load_progress(gt: &GameThread) -> Option<RustRef<'_, Progress>> {
     if !GameplayStatics::does_save_game_exist(SLOT, 0) {
         return None;
     }
 
-    Progress::from_obj(GameplayStatics::load_game_from_slot(SLOT, 0)).ok()
+    Progress::from_obj(GameplayStatics::load_game_from_slot(gt, SLOT, 0)).ok()
 }
 ```
 
 - `create_save_game_object` makes an empty save of the class; `save_game_to_slot` writes all its properties to the slot; `load_game_from_slot` reads it back as a new object.
 - The second argument of each is the user index, `0` for a single player.
+- `create_save_game_object` and `load_game_from_slot` take a `GameThread` first, since 0.10: they return an object without being given one, and it lives as long as the `GameThread` borrow. `from_obj` gives the Rust class for as long as that object may live; keep the save in a `#[uproperty]` or a `Pinned` to use it later.
 - Saves go to `Saved/SaveGames/<slot>.sav` in the project during development, and to the platform's save location in a packaged game.
 
 ## Use case: checkpoints

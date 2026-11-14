@@ -5,14 +5,19 @@
 ```rust
 use std::time::Duration;
 
-use rusteal_runtime::runtime::{SoftObjectRef, UObjectRef, http, task, timer};
+use rusteal_runtime::runtime::{SoftObjectRef, TWeakObjectPtr, UObjectRef, http, task, timer};
 
 #[uclass_impl]
 impl IntroGameMode {
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
         let me = self.as_ref();
-        let welcome = Self::welcome(me, self.welcome_sound(), self.welcome_url(), self.welcome_message());
+        let welcome = Self::welcome(
+            TWeakObjectPtr::from_ref(&me),
+            self.welcome_sound(),
+            self.welcome_url(),
+            self.welcome_message(),
+        );
 
         let _task = task::spawn_local(&me, welcome);
     }
@@ -20,23 +25,31 @@ impl IntroGameMode {
 
 impl IntroGameMode {
     async fn welcome(
-        me: UObjectRef<GameModeBase>,
+        me: TWeakObjectPtr<GameModeBase>,
         sound: SoftObjectRef<SoundBase>,
         url: String,
         fallback: String,
     ) {
         let sound = sound.load_async().await.ok();
 
-        timer::sleep(&me, Duration::from_secs_f32(1.5)).await;
+        let Some(context) = me.get() else {
+            return;
+        };
+
+        timer::sleep(&context, Duration::from_secs_f32(1.5)).await;
 
         let message = match http::get(&url).timeout(Duration::from_secs(5)).send().await {
             Ok(response) if response.is_success() => response.text(),
             _ => fallback,
         };
 
+        let Some(me) = me.get() else {
+            return;
+        };
+
         let world: UObjectRef<Object> = me.upcast_to();
 
-        if let Some(sound) = sound {
+        if let Some(sound) = sound.as_ref().and_then(TWeakObjectPtr::get) {
             GameplayStatics::play_sound2_d(world, sound, None, None, None, None, None, None);
         }
 
@@ -64,26 +77,32 @@ A task is cancelled at an `.await`: when its owner is destroyed, the future is d
 
 ### What a task holds
 
-A future may live for many frames, while the engine runs other code on the same object: a tick, an overlap, a Blueprint. So a future takes the object as a handle, a `UObjectRef` or the class itself by value, never `&self` or `&mut self`:
+A future may live for many frames, while the engine runs other code on the same object: a tick, an overlap, a Blueprint. So a future holds its objects as `TWeakObjectPtr`s and plain values, never `&self`, `&mut self` or a `UObjectRef`, which lives only as long as the call that gave it (the compiler refuses them, since 0.10):
 
 ```rust
-fn unlock(&mut self) -> RustealResult<()> {
+fn unlock(&mut self) {
     let me = self.as_ref();
-    let door = Door::from_obj(me)?;
-
-    let _task = task::spawn_local(&me, Self::open_after(door, Duration::from_secs(2)));
-    Ok(())
+    let _task = task::spawn_local(&me, Self::open_after(TWeakObjectPtr::from_ref(&me), Duration::from_secs(2)));
 }
 
-async fn open_after(door: Door, delay: Duration) {
-    timer::sleep(&door.as_ref(), delay).await;
-    door.open();
+async fn open_after(door: TWeakObjectPtr<Door>, delay: Duration) {
+    let Some(context) = door.get() else {
+        return;
+    };
+
+    timer::sleep(&context, delay).await;
+
+    if let Some(door) = door.get() {
+        if let Ok(mut door) = Door::from_obj(door) {
+            door.open();
+        }
+    }
 }
 ```
 
-`Door::from_obj` gives the class by value, from its handle. The task's owner is the same object: the task stops when it is destroyed, so the class the future holds is never used on a dead object. A future that holds another object finds it again after each `.await`, with `Other::from_obj(handle)`, which fails when it is gone.
+The task's owner is the same object: the task stops when it is destroyed. After each `.await`, the future finds its objects again with `get()`, and the Rust class with `from_obj`, which fail when they are gone. Do not keep what `from_obj` gave, or a reference into the class, across an `.await`: take it again after.
 
-Do not keep a reference into the class (from an `x_mut()` accessor, or a borrow of a field) across an `.await`: take it again after.
+A `#[ufunction] async fn` takes its object parameters as `TWeakObjectPtr<T>` for the same reason.
 
 ## Waiting
 
@@ -91,7 +110,7 @@ Do not keep a reference into the class (from an `x_mut()` accessor, or a borrow 
 |---|---|
 | `timer::sleep(&object, duration)` | `duration` of the world's time has passed: it stops while the game is paused and follows time dilation. |
 | `timer::sleep_real(duration)` | `duration` of the engine's clock has passed, paused or not. |
-| `delegate.next()` | the delegate fires, with its parameters (see [Delegates](delegates.md#use-case-waiting-for-a-delegate)). |
+| `delegate.next()` | the delegate fires, with its parameters; objects come as `TWeakObjectPtr` (see [Delegates](delegates.md#use-case-waiting-for-a-delegate)). |
 | an engine latent function | the engine's latent action finishes (below). |
 
 ## The engine's latent functions
@@ -120,9 +139,9 @@ The call starts when the future is first awaited. Dropping it before it finishes
 
 | Function | What it loads |
 |---|---|
-| `soft.load_async().await` | the asset of a `SoftObjectRef<T>`, as a `UObjectRef<T>`; an error when there is no such asset or it is not a `T` |
+| `soft.load_async().await` | the asset of a `SoftObjectRef<T>`, as a `TWeakObjectPtr<T>`; an error when there is no such asset or it is not a `T` |
 | `soft_class.load_async().await` | the class of a `SoftClassRef<T>`, as a `SubclassOf<T>` |
-| `loading::load_all(&[soft, ...]).await` | several assets in one request, a result for each |
+| `loading::load_all(&[soft, ...]).await` | several assets in one request, a result (a `TWeakObjectPtr<T>`) for each |
 | `loading::load_primary_asset::<T>("Type:Name", &bundles).await` | a primary asset with its bundles, through the asset manager |
 
 The asset manager loads them in the background, while the game runs. Nothing keeps a loaded asset in memory but what holds it: store it in a `#[uproperty]`, or pin it, before the next garbage collection. Dropping the future cancels the request.
@@ -159,7 +178,7 @@ impl Door {
 }
 ```
 
-An `async #[ufunction]` (since 0.10) is a latent node in Blueprints, with the clock icon. It takes `self`, the class by value, for the reasons in [What a task holds](#what-a-task-holds), returns nothing (or `RustealResult<()>`, whose error is logged) and has no out parameters: the node's outputs are set when it starts, and its output pin runs when the function finishes. A second call while the first runs does nothing, as with any latent node; when the Blueprint aborts the node, or the object is destroyed, the task is cancelled and the output pin does not run. Rust code calls it as any async function: `door.open_slowly(2.0).await`. Its outputs go in properties of the class, which the Blueprint reads after the node.
+An `async #[ufunction]` (since 0.10) is a latent node in Blueprints, with the clock icon. It takes `self`, the class by value: the task belongs to the object and stops when it is destroyed, so `self` is never used on a dead object. Its object parameters are `TWeakObjectPtr<T>`, found again after each wait, for the reasons in [What a task holds](#what-a-task-holds). It returns nothing (or `RustealResult<()>`, whose error is logged) and has no out parameters: the node's outputs are set when it starts, and its output pin runs when the function finishes. A second call while the first runs does nothing, as with any latent node; when the Blueprint aborts the node, or the object is destroyed, the task is cancelled and the output pin does not run. Rust code calls it as any async function: `door.open_slowly(2.0).await`. Its outputs go in properties of the class, which the Blueprint reads after the node.
 
 In the editor, in a Blueprint's **Event Graph**, drag a wire from a `Door` reference and search for **Open Slowly**; connect its output pin to what runs after the door is open.
 
@@ -174,7 +193,7 @@ let action = AsyncActionHandleSaveGame::async_save_game_to_slot(world, save, "Sl
 let completed = action.completed().next();
 action.activate();
 
-let (_save, saved) = completed.await?;
+let (_save, saved) = completed.await?; // _save is a TWeakObjectPtr
 ```
 
 ## Hot reload

@@ -12,9 +12,12 @@ explosion_sound: UObjectRef<SoundBase>,
 ## Loading an asset by path
 
 ```rust
-let mesh: UObjectRef<StaticMesh> = load_object("/Game/Props/SM_Crate.SM_Crate")?;
-let cube: UObjectRef<StaticMesh> = load_object("/Engine/BasicShapes/Cube")?;
+let gt = GameThread::current()?;
+let mesh: UObjectRef<StaticMesh> = load_object(&gt, "/Game/Props/SM_Crate.SM_Crate")?;
+let cube: UObjectRef<StaticMesh> = load_object(&gt, "/Engine/BasicShapes/Cube")?;
 ```
+
+`load_object`, `find_object` and `new_object_transient` take a `GameThread` first (since 0.10): the proof that the code runs on the game thread, and what the object borrows, since nothing else it was given lives as long as the object may. The object lives as long as `gt` (see [Object references](object_refs.md#a-reference-lives-as-long-as-the-call-that-gave-it)); keep it past that in a `#[uproperty]`, a `TWeakObjectPtr` or a `Pinned`.
 
 A class, a Blueprint's included, loads with `load_class`, checked against the class it must derive from:
 

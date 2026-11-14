@@ -174,15 +174,11 @@ impl GuardController {
 
 impl GuardController {
     fn bind_perception(&self) -> RustealResult<()> {
-        let me: UObjectRef<AIController> = self.as_ref();
-
         self.ai_perception()?
             .checked()?
             .on_target_perception_updated()
-            .add(move |actor, stimulus| {
-                if let Ok(guard) = GuardController::from_obj(me) {
-                    guard.on_perceived(actor, stimulus);
-                }
+            .add_method(self, |guard: &mut Self, actor, stimulus| {
+                guard.on_perceived(actor, stimulus);
             })?
             .detach();
 
@@ -221,10 +217,8 @@ To know when the move ends, bind the controller's `receive_move_completed` deleg
 ```rust
 controller
     .receive_move_completed()
-    .add(move |_request_id, _result| {
-        if let Ok(mut unit) = Unit::from_obj(me) {
-            unit.on_arrived();
-        }
+    .add_method(self, |unit: &mut Self, _request_id, _result| {
+        unit.on_arrived();
     })?
     .detach();
 ```
@@ -253,10 +247,8 @@ self.set_env_query_instance(query_instance);
 query_instance
     .checked()?
     .on_query_finished_event()
-    .add(move |finished_query, _status| {
-        if let Ok(mut unit) = Unit::from_obj(me) {
-            unit.on_eqs_finished(finished_query);
-        }
+    .add_method(self, |unit: &mut Self, finished_query, _status| {
+        unit.on_eqs_finished(finished_query);
     })?
     .detach();
 ```

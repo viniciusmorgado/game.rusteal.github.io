@@ -137,13 +137,9 @@ pub struct SoldierController {
 impl SoldierController {
     #[ufunction(Override)]
     fn receive_possess(&mut self, possessed_pawn: UObjectRef<Pawn>) {
-        let controller: UObjectRef<PlayerController> = self.as_ref();
-
         let bound = possessed_pawn.checked().and_then(|pawn| {
-            pawn.on_destroyed().add(move |_destroyed| {
-                if let Ok(mut me) = SoldierController::from_obj(controller)
-                    && let Err(e) = me.respawn()
-                {
+            pawn.on_destroyed().add_method(self, |me: &mut Self, _destroyed| {
+                if let Err(e) = me.respawn() {
                     log::warn!("[MyGame] respawn failed: {e}");
                 }
             })

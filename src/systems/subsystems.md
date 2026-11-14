@@ -69,7 +69,7 @@ From Rust, through the engine's `SubsystemBlueprintLibrary`, with any object in 
 use bindings::engine::{SubsystemBlueprintLibrary, WorldSubsystem};
 
 impl WaveDirector {
-    pub fn get(context: UObjectRef<Object>) -> RustealResult<Self> {
+    pub fn get(context: UObjectRef<Object>) -> RustealResult<RustRef<Self>> {
         let class = SubclassOf::<WaveDirector>::base().upcast_to::<WorldSubsystem>();
         Self::from_obj(SubsystemBlueprintLibrary::get_world_subsystem(context, class))
     }
@@ -77,6 +77,8 @@ impl WaveDirector {
 
 let mut director = WaveDirector::get(self.as_ref().upcast_to())?;
 ```
+
+`from_obj` gives a `RustRef`, the class for as long as `context` may live: find the subsystem again where it is needed rather than keeping it.
 
 `get_game_instance_subsystem`, `get_local_player_subsystem` and `get_engine_subsystem` find the other kinds.
 

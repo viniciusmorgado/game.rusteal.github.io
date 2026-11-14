@@ -53,7 +53,9 @@ self.set_burst_size(5);
 self.set_current_target(target);
 ```
 
-The getter of a scalar, an object, a class or a name returns a copy. The getter of a `UeArray` returns a view of the array inside the object, changed in place:
+Setters take `&self` (since 0.10): the engine stores the value, so a setter can be called while an object read from `self` is still in use.
+
+The getter of a scalar, an object, a class or a name returns a copy; an object lives as long as the borrow of `self`. The getter of a `UeArray` returns a view of the array inside the object, changed in place:
 
 ```rust
 let tags = self.target_tags();
@@ -154,7 +156,7 @@ self.cooldowns_mut().insert(weapon, 2.0);
 The getter of a Rust-only field returns a clone. Use these fields for state the editor does not need: caches, timers, a state machine, a `HashMap`. Two things to keep in mind:
 
 - They start over from `Default` on every [hot reload](../iteration/hot_reload.md).
-- An `UObjectRef` kept only there does not keep its object alive: the garbage collector does not see it. Hold the objects you need to keep in a `#[uproperty]`, or check them with `checked()` before use (see [Object references](../engine_api/object_refs.md)).
+- They cannot hold a `UObjectRef`, even inside an `Option`, a `Vec` or a map: the garbage collector does not see these fields, so the class refuses to compile (since 0.10). Hold an object the class keeps in a `#[uproperty]`, one it only watches in a `TWeakObjectPtr`, or one Rust alone keeps in a `Pinned` (see [Object references](../engine_api/object_refs.md#keeping-an-object)).
 
 The templates keep a class's transient state in one plain struct field, read, changed and written back:
 

@@ -15,6 +15,7 @@ rusteal package --shipping --output ~/Builds/MyGame
 | `--shipping` | A **Shipping** build: no console, no logging, fully optimized. |
 | `--output <dir>` | Where the packaged game goes. |
 | `--static` | Links the Rust code into the game's executable instead of shipping it as libraries (below). |
+| `--feature shared-std` | With `--static`, for an engine fork that links Rust of its own ([below](#an-engine-with-rust-inside)). |
 | `--platform <name or file>` | The platform to package for (below); the one the CLI runs on by default. |
 | `--optimizations off` | Leaves out the [platform optimizations](../cli/optimizations.md), which the game carries by default. |
 
@@ -39,6 +40,27 @@ Two things to know:
 
 - **Each crate with Rust classes belongs to one library.** A helper crate in your game's `Rust/` workspace is part of the game's library; the same crate used by the game and by a plugin is refused, since its classes would be registered twice.
 - **Plugins made with Rusteal before 0.9** stage their dynamic library in the package anyway, unused: `rusteal package --static` lists them. Their `Build.cs` adds the library itself; replace those lines with `UnrealBuildTool.Rules.Rusteal.AddRustLibrary(this, Target, PluginDirectory, "rusteal_<Plugin>");`, as a new plugin does.
+
+### An engine with Rust inside
+
+```bash
+rusteal package --static --feature shared-std
+```
+
+Only for a fork of the engine that links a Rust static library of its own into the game. The engine from Epic, built from source or installed from the launcher, links no Rust: leave this feature out, as by default.
+
+The static library keeps Rust's standard library inside it, compiled into it and hidden, so it links next to any other Rust code. One symbol stays visible: the routine that unwinds a panic, `rust_eh_personality`. An engine that links Rust defines it too, and the game's final link fails with:
+
+```text
+ld.lld: error: duplicate symbol: rust_eh_personality
+```
+
+With `shared-std`, Rusteal's library gives way, on every platform:
+
+- on Linux, Android, macOS and iOS, its routine becomes a weak definition, so the linker takes the engine's, and both halves of the game unwind through it;
+- on Windows, where libraries have no weak definitions, its routine becomes private to the library; Rust on Windows unwinds through the C++ runtime and never calls it.
+
+Nothing else changes: each half keeps its own standard library and allocator, and catches its own panics. The package log says so, with `rusteal package: shared-std, the library gives way to the engine's Rust personality`. The editor needs nothing: each Rust library there is a dynamic library, with its symbols kept to itself.
 
 ## Packaging for another platform
 

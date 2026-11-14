@@ -5,13 +5,18 @@
 Unreal's objects belong to the game thread: engine calls are made from there. Everything else is plain Rust, and runs anywhere: threads, `rayon`, `tokio`. `task::spawn` connects the two:
 
 ```rust
-use rusteal_runtime::runtime::task;
+use rusteal_runtime::runtime::{TWeakObjectPtr, task};
 
 let seed = self.seed();
+let builder = TWeakObjectPtr::from_ref(&self.as_ref());
 
 task::spawn(
     move || generate_dungeon(seed),
     move |dungeon| {
+        let Some(builder) = builder.get() else {
+            return;
+        };
+
         if let Ok(mut level) = LevelBuilder::from_obj(builder) {
             level.place_rooms(&dungeon);
         }
@@ -22,7 +27,9 @@ task::spawn(
 - The first closure runs as a background task of the engine's task system, on one of its worker threads, like the engine's own background work (it shows up in Unreal Insights). It must not call the engine.
 - The second runs on the game thread, on a frame after the first finishes, with its result. There, the engine can be called again.
 
-Capture `UObjectRef`s, not Rust class values, in the second closure, and turn them back into the class with `from_obj`: the object may have been destroyed while the work ran.
+The second closure runs in a later frame, so it captures a `TWeakObjectPtr`, not a `UObjectRef` (which lives only as long as the call that gave it) nor the class, and finds the object again with `get()` and `from_obj`: it may have been destroyed while the work ran.
+
+Object references are not `Send` (since 0.10): the compiler keeps them out of the first closure, out of `rayon` and out of threads. A `TWeakObjectPtr` is `Send`, and resolves only on the game thread. Development builds also check every engine call: one made off the game thread panics with the name of the function, where C++ would race with the game thread. See [Object references](../engine_api/object_refs.md#threads).
 
 In async code, `task::run_blocking(move || generate_dungeon(seed)).await` does the same in one line, and goes on with the result where it left off. See [Async code](../engine_api/async.md).
 

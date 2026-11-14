@@ -124,14 +124,17 @@ impl MyCharacter {
             return Ok(());
         }
 
+        // Input fires in later frames: the closures keep the character as a weak pointer.
+        let character = TWeakObjectPtr::from_ref(&me);
+
         bind_action(&me, self.jump_action(), ETriggerEvent::Started, move |_| {
-            if let Ok(character) = me.checked() {
+            if let Ok(character) = character.checked() {
                 character.jump();
             }
         })?;
 
         bind_action(&me, self.jump_action(), ETriggerEvent::Completed, move |_| {
-            if let Ok(character) = me.checked() {
+            if let Ok(character) = character.checked() {
                 character.stop_jumping();
             }
         })?;
@@ -145,7 +148,7 @@ impl MyCharacter {
 ```
 
 - `receive_restarted` is where a pawn binds input: it runs when a controller possesses the pawn, once the input component exists. It replaces C++'s `SetupPlayerInputComponent`.
-- `bind_action(&pawn, action, trigger, callback)` (since 0.10) calls `callback` with the action's value each time the trigger event happens. `method(self, Self::r#move)` makes the callback a method of the class, checked by the compiler; a closure calls an engine function, as `jump` and `stop_jumping` above. The method needs no `#[ufunction]`.
+- `bind_action(&pawn, action, trigger, callback)` (since 0.10) calls `callback` with the action's value each time the trigger event happens. `method(self, Self::r#move)` makes the callback a method of the class, checked by the compiler; a closure calls an engine function, as `jump` and `stop_jumping` above. The method needs no `#[ufunction]`. A closure runs in later frames, so it captures the pawn as a `TWeakObjectPtr`, not as the `UObjectRef` `self.as_ref()` gives, which lives only as long as this call (see [Object references](../engine_api/object_refs.md#a-reference-lives-as-long-as-the-call-that-gave-it)).
 - The value of an action reads as `get_bool()`, `axis1d()`, `axis2d()` or `axis3d()`, by its **Value Type**.
 - `bind_action` returns an `ActionBinding`: the binding lasts as long as the pawn's input component (until the pawn is unpossessed), and `unbind()` removes it sooner.
 

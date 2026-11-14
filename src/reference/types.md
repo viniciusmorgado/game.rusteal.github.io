@@ -8,13 +8,13 @@
 | `FString` | `String` (properties, returns, your functions' parameters), `&str` (engine arguments) | |
 | `FName` | `FName` (properties, Rust code), `FNameHandle` (engine arguments and returns) | `FName::new("x").handle()`, `FName::from(handle)` |
 | `FText` | `Text` (since 0.10; arguments take `impl Into<Text>`, so a `&str` works) | keeps its localization; see [Text and localization](../engine_api/text.md) |
-| `UObject*`, `TObjectPtr<T>` | `UObjectRef<T>` | a handle; see [Object references](../engine_api/object_refs.md) |
+| `UObject*`, `TObjectPtr<T>` | `UObjectRef<'a, T>` | the object's index and serial number, for as long as the call that gave it (0.10); see [Object references](../engine_api/object_refs.md) |
 | `TSubclassOf<T>` | `SubclassOf<T>` | a class |
 | `TScriptInterface<IFoo>` | `ScriptInterface<dyn Foo>` | an object implementing a `#[uinterface]`; `object.interface::<dyn Foo>()` (after 0.7.0) |
 | `TScriptInterface<IBlendableInterface>` (an engine interface) | `UObjectRef<BlendableInterface>` | `object.cast::<BlendableInterface>()`; `FScriptInterface` is `UObjectRef<Object>` (0.10) |
 | `TSoftObjectPtr<T>` | `SoftObjectRef<T>` | an asset by path; the engine's too since 0.10 |
 | `TSoftClassPtr<T>` | `SoftClassRef<T>` | a class by path, such as a Blueprint not loaded yet; engine properties and functions (0.10) |
-| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10 |
+| `TWeakObjectPtr<T>` | `TWeakObjectPtr<T>` | the engine's too since 0.10; what closures, tasks and Rust-only fields keep, and `Send` |
 | `TLazyObjectPtr<T>` | `TWeakObjectPtr<T>` | engine properties (0.10) |
 | `TOptional<T>` | `Option<T>` | engine properties and struct fields of bools, numbers, enums, structs and objects (0.10) |
 | A struct (`FVector`, `FHitResult`, `FIntPoint`...) | `OwnedStruct<T>` (owned), `UStructRef<T>` (a reference into Unreal memory) | fields through the `<Struct>Ext` trait; every engine struct since 0.10 |

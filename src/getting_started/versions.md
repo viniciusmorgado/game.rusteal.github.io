@@ -32,6 +32,25 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 
 ### 0.10
 
+- **Object references are checked by the engine's index and serial number, and live as long as the call that gave them.** These are compile errors to fix, each pointed at by the compiler. See [Object references](../engine_api/object_refs.md).
+  - A `#[uclass]` refuses a Rust-only field that holds a `UObjectRef` (inside an `Option`, a `Vec` or a map too): make it a `#[uproperty]` when the class keeps the object, a `TWeakObjectPtr<T>` when it only watches it, or a `Pinned<T>`.
+  - A closure, a task or a timer callback cannot capture a `UObjectRef`: capture a `TWeakObjectPtr<T>` and call `get()` or `checked()` on it when it runs.
+
+    ```rust
+    // before
+    let me = self.as_ref();
+    pawn.on_destroyed().add(move |_| { if let Ok(mut me) = MyController::from_obj(me) { me.respawn(); } })?;
+    // now: the class's own method, found again on each call
+    pawn.on_destroyed().add_method(self, |me: &mut Self, _destroyed| me.respawn())?;
+    ```
+
+  - A delegate whose parameters include objects binds a method with `add_method(self, Self::on_hit)` (`<name>_add_method` for a `#[udelegate]`), not `add(method(self, Self::on_hit))`.
+  - `load_object`, `find_object`, `new_object_transient`, and engine functions with no object parameter that return one take a `GameThread` first: `let gt = GameThread::current()?;`.
+  - `MyClass::from_obj` gives a `RustRef<MyClass>`, which derefs to the class; setters take `&self`.
+  - `next()`, `load_async()` and an `async #[ufunction]`'s object parameters are `TWeakObjectPtr<T>`.
+  - `UObjectRef`, `Checked`, `Pinned`, `ScriptInterface`, `SubclassOf` and `OwnedStruct` are not `Send`; callbacks no longer need `Send`. Development builds panic on an engine call made off the game thread.
+  - Each `Pinned` keeps its object on its own, and `OwnedStruct` keeps the objects it holds alive.
+
 - **Engine soft and weak references have their own types.** An engine `TSoftObjectPtr<T>` is a `SoftObjectRef<T>` and an engine `TWeakObjectPtr<T>` a `TWeakObjectPtr<T>`, in properties, struct fields, function parameters and returns; they were `UObjectRef<T>`. A soft reference keeps its path when the asset is not loaded, so a function such as `KismetSystemLibrary::load_asset_blocking` takes a path. See [Object references](../engine_api/object_refs.md#engine-soft-and-weak-references).
 
   ```rust
@@ -118,6 +137,8 @@ When the versions it crosses change an API your code may use, `rusteal upgrade` 
 - **Gameplay tags declared in Rust:** `declare_gameplay_tag` adds a native tag, with its parents, and `gameplay_tag` finds a tag of the project. See [Gameplay tags](../systems/gameplay_tags.md).
 
 - **The Gameplay Ability System in Rust:** with the `gameplay-abilities` feature, `RustealAttributeSet` raises the attribute set's C++ hooks as events, for attribute sets in Rust, next to Rust gameplay effects and abilities. A base in `[[codegen.shims]]` maps an event's parameters (`event_params`, `event_args`), gives it a `default` and has static `functions`, and the game's bindings call the bases' functions. See [The Gameplay Ability System](../systems/abilities.md).
+
+- **A static package for an engine fork with Rust inside:** `rusteal package --static --feature shared-std` links the Rust code into a game whose engine links a Rust static library of its own. See [An engine with Rust inside](../shipping/packaging.md#an-engine-with-rust-inside).
 
 - **Production tooling:** `trace_scope!`, `stat_scope!` and `profiling::memory_tag` put Rust code in Unreal Insights, `stat Rusteal` and the memory tracker (see [Profiling](../iteration/profiling.md)); `automation::register_test` makes Rust automation tests (see [Automation tests](../iteration/automation.md)); `loctext!` texts reach the localization gather (see [Text and localization](../engine_api/text.md#translating-texts)); the `vscode` feature adds tasks and debugger configurations (see [Debugging](../iteration/debugging.md)).
 
