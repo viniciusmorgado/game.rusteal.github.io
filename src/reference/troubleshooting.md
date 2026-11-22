@@ -54,7 +54,7 @@ The Rust function or property it used was removed or renamed. Fix the node or pu
 ## Playing
 
 **Input does nothing.**
-The Output Log says which part is missing: no mapping contexts added (the player controller's Blueprint child has none, or the game mode does not use that controller), or a function name in `bind_action` that does not exist. See [Character movement and input](../recipes/input.md).
+The Output Log says which part is missing: no mapping contexts added (the player controller's Blueprint child has none, or the game mode does not use that controller), or a function name passed to `bind_action_by_name` that the Blueprint does not define. `bind_action` takes a closure or a method, so the compiler catches a wrong one. See [Character movement and input](../recipes/input.md).
 
 **`spawn_actor` logs that the actor has no root component.**
 The spawned class has no scene component as root, so the transform is ignored. Give it a `#[component(root)]`, or spawn a class that has one.

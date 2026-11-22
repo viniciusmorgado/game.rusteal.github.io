@@ -51,7 +51,8 @@ let health = enemy_type.max_health();
 Or the game loads one by path:
 
 ```rust
-let grunt: UObjectRef<EnemyType> = load_object("/Game/Enemies/DA_Grunt.DA_Grunt")?;
+let gt = GameThread::current()?;
+let grunt: UObjectRef<EnemyType> = load_object(&gt, "/Game/Enemies/DA_Grunt.DA_Grunt")?;
 ```
 
 An asset loaded only by path must be in a directory the cooker cooks: see [Packaging a game](../shipping/packaging.md).

@@ -31,20 +31,16 @@ impl Fighter {
         Ok(())
     }
 
-    fn bind_montage_end(&mut self, anim_instance: UObjectRef<AnimInstance>) -> RustealResult<()> {
+    fn bind_montage_end(&self, anim_instance: UObjectRef<AnimInstance>) -> RustealResult<()> {
         if self.montage_end_bound() {
             return Ok(());
         }
 
-        let character: UObjectRef<Character> = self.as_ref();
-
         anim_instance
             .checked()?
             .on_montage_ended()
-            .add(move |montage, _interrupted| {
-                if let Ok(mut me) = Fighter::from_obj(character)
-                    && montage == me.attack_montage()
-                {
+            .add_method(self, |me: &mut Self, montage, _interrupted| {
+                if montage == me.attack_montage() {
                     me.set_is_attacking(false);
                 }
             })?
@@ -202,6 +198,10 @@ if let Ok(mut hand_anim) = HandAnimInstance::from_obj(anim) {
 The variable types follow the Blueprint's: a Blueprint **Float** that is double precision is `f64`, one stored in single precision is `f32`. When they match, the AnimGraph's nodes take the Rust property in place of a variable of the same name.
 
 Template: `vr`.
+
+### Off the game thread
+
+The engine updates animation on worker threads where it can. `blueprint_thread_safe_update_animation`, and the `receive_thread_safe_update_animation` of the `RustealAnimInstance` base, run there: such an override is a `#[ufunction(Override, ThreadSafe)]` that takes the class's thread-safe view, `HandAnimInstanceThreadSafe`, which reaches the `#[uproperty]` fields only. See [Engine virtuals](../classes/virtuals.md#use-case-an-animation-update-on-a-worker-thread).
 
 ## Use case: a mannequin that copies the player
 

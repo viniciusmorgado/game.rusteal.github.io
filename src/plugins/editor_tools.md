@@ -63,8 +63,8 @@ impl LevelToolsSubsystem {
             FName::new("LevelEditor.MainMenu.Tools").handle(),
             FName::new("LevelTools").handle(),
             FName::new("LevelToolsCountAssets").handle(),
-            Some("Count assets"),
-            Some("Count the project's assets by type, off the game thread"),
+            "Count assets",
+            "Count the project's assets by type, off the game thread",
         );
 
         script.register_menu_entry();

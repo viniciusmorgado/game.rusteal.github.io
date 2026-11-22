@@ -16,7 +16,7 @@ Either of these works:
 | Command | What it does |
 |---|---|
 | `Rusteal.Reload` | Reloads every Rust library of the project: the game's and each Rust plugin's. |
-| `Rusteal.Reload <Name>` | Reloads one library: the game's is named after the project, a plugin's after the plugin. |
+| `Rusteal.Reload <Name>` | Reloads one library: the game's is named after the project, a plugin's after the plugin, a plugin's editor library after its module (`<Plugin>Editor`). |
 | `Rusteal.AutoReload 0` | Stops reloading a library when `rusteal build` deploys it again. `Rusteal.Reload` still works. |
 | `Rusteal.AutoReload 1` | Reloads a library when it is deployed again. This is the default. |
 

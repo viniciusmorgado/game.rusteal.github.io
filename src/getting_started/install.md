@@ -8,6 +8,8 @@ cargo install rusteal
 
 The binary carries the Unreal plugins and the project templates inside it: there is nothing else to download.
 
+To create projects from the editor's **New Project** dialog too, install the launcher into the engine with `rusteal launcher install` (see [Creating a project from the editor](from_the_editor.md)).
+
 ## Telling Rusteal where the engine is
 
 The first command that needs the engine asks where it is installed:

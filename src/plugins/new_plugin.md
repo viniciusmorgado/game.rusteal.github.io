@@ -18,6 +18,7 @@ rusteal plugin new LevelTools --template editor
 | `--template <name>` | The plugin template, `blank` by default. |
 | `--project <path>` | The project to add it to, when not run from inside it. |
 | `--no-build` | Writes the plugin and stops. |
+| `--editor` | Adds an editor library to the runtime plugin (see [A runtime and an editor library](#a-runtime-and-an-editor-library)). |
 
 ## Plugin templates
 
@@ -63,6 +64,41 @@ features = ["core", "engine", "input", "slate", "umg"]
 UnrealEd = { module = "unreal_ed", feature = "editor", classes = ["EditorActorSubsystem", "EditorAssetSubsystem"] }
 ```
 
+## A runtime and an editor library
+
+A runtime plugin can carry its editor tools too, in a second library that the editor loads and a packaged game leaves out:
+
+```bash
+rusteal plugin new Inventory --editor
+rusteal plugin editor Inventory
+```
+
+The first creates the plugin with both libraries; the second adds the editor library to a plugin that has only its runtime one. The editor library is a second C++ module, `<Plugin>Editor`, with its own crate and bindings in the plugin's workspace, and the editor template's code: an editor subsystem, a **Tools** menu entry, a console command and an asset validator.
+
+```text
+Plugins/Inventory/
+├── Source/Inventory/           # the runtime library's module
+├── Source/InventoryEditor/     # the editor library's module
+├── Rust/
+│   ├── inventory/              # the runtime library's code
+│   ├── bindings/               # its bindings
+│   ├── inventory-editor/       # the editor library's code
+│   └── editor-bindings/        # its bindings, with the editor's modules
+└── Binaries/<Platform>/        # librusteal_Inventory.so and librusteal_InventoryEditor.so
+```
+
+`rusteal.toml` describes the editor library in its own section, with the engine modules it binds:
+
+```toml
+[editor]
+crate = "inventory-editor"
+
+[editor.codegen]
+features = ["core", "engine", "input", "slate", "umg", "editor"]
+```
+
+The editor library cannot `use` the runtime library's Rust types: it would register them a second time. It reaches the runtime library's classes through their Unreal functions, with a [dynamic call](../engine_api/dynamic_calls.md), an interface or a Blueprint class, as it would another plugin's; code shared by both without Rust types can go into a crate of its own. `rusteal build` refuses an editor crate that depends on the runtime crate.
+
 ## Building and reloading
 
 ```bash
@@ -71,7 +107,7 @@ rusteal build --plugin Inventory
 rusteal watch --plugin Inventory
 ```
 
-`rusteal build` builds every library of the project, the game's and each plugin's. `--plugin <Name>` limits the codegen, Cargo and deploy steps to one plugin, which is what working on it needs. In the editor, `Rusteal.Reload Inventory` reloads only that plugin's library, and each build reloads it on its own (see [Hot reload](../iteration/hot_reload.md)).
+`rusteal build` builds every library of the project, the game's and each plugin's. `--plugin <Name>` limits the codegen, Cargo and deploy steps to one plugin, both of its libraries when it has two, which is what working on it needs. In the editor, `Rusteal.Reload Inventory` reloads only that plugin's library (`Rusteal.Reload InventoryEditor` its editor library), and each build reloads it on its own (see [Hot reload](../iteration/hot_reload.md)).
 
 ## In the editor
 

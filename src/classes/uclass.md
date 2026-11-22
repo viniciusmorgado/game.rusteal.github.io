@@ -66,7 +66,7 @@ Inside the class, `self` is the Rust side of the object. Three methods connect i
 | Method | What it returns |
 |---|---|
 | `self.as_ref()` | A reference to the object as its parent class (`UObjectRef<Actor>` for `Barrel`), to call engine functions on it. |
-| `MyClass::from_obj(object)` | The Rust class of any object reference, or an error if the object is not of that class. |
+| `MyClass::from_obj(object)` | The Rust class of any object reference, for as long as the reference may live, or an error if the object is not of that class. |
 | `MyClass::get_default()` | The class default object, which every instance starts from. |
 
 ```rust
@@ -75,12 +75,12 @@ let location = me.k2_get_actor_location().to_dvec3();
 ```
 
 ```rust
-if let Ok(mut barrel) = Barrel::from_obj(other_actor) {
+if let Ok(barrel) = Barrel::from_obj(other_actor) {
     barrel.set_health(barrel.health() - 10);
 }
 ```
 
-`from_obj` is how one Rust class reaches another: an overlap gives an `UObjectRef<Actor>`, and `from_obj` turns it into the Rust class, with its getters, setters and methods, when that is what it is. See [Object references](../engine_api/object_refs.md).
+`from_obj` is how one Rust class reaches another: an overlap gives an `UObjectRef<Actor>`, and `from_obj` turns it into the Rust class, with its getters, setters and methods, when that is what it is. What it gives (a `RustRef<Barrel>`, since 0.10) lives as long as the reference it came from: to reach the class in a later frame, keep the object (a `TWeakObjectPtr`, a `#[uproperty]`) and call `from_obj` again then. See [Object references](../engine_api/object_refs.md).
 
 ## Where the class lives
 

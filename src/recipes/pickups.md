@@ -72,7 +72,14 @@ The collision only overlaps pawns, so the coin does not block anything. The Blue
 
 **The goal:** a pickup gives its weapon to whoever walks in, hides, and comes back after a few seconds.
 
+The respawn is a timer whose handle the pickup keeps in a Rust-private field, `respawn_timer: Option<TimerHandle>`, to clear it when the pickup leaves play or is taken again:
+
 ```rust
+use std::time::Duration;
+
+use rusteal_runtime::runtime::method;
+use rusteal_runtime::runtime::timer::{self, TimerHandle};
+
 #[ufunction(Override)]
 fn receive_actor_begin_overlap(&mut self, other_actor: UObjectRef<Actor>) {
     let Some(mut holder) = weapon_holder(other_actor) else {
@@ -88,7 +95,19 @@ fn receive_actor_begin_overlap(&mut self, other_actor: UObjectRef<Actor>) {
     me.set_actor_hidden_in_game(true);
     me.set_actor_enable_collision(false);
 
-    KismetSystemLibrary::k2_set_timer(me.as_ref().upcast_to(), "RespawnPickup", self.respawn_time(), false, None, None, None);
+    if let Some(respawn_timer) = self.respawn_timer() {
+        respawn_timer.clear();
+    }
+
+    let respawn_timer = timer::set_timer(
+        &self.as_ref(),
+        Duration::from_secs_f32(self.respawn_time()),
+        false,
+        method(self, Self::respawn_pickup),
+    )
+    .ok();
+
+    self.set_respawn_timer(respawn_timer);
 }
 
 #[ufunction]
@@ -101,8 +120,10 @@ fn respawn_pickup(&mut self) {
 
 #[ufunction(Override)]
 fn receive_end_play(&mut self, _end_play_reason: u8) {
-    KismetSystemLibrary::k2_clear_timer(self.as_ref().upcast_to(), "RespawnPickup");
+    if let Some(respawn_timer) = self.respawn_timer() {
+        respawn_timer.clear();
+    }
 }
 ```
 
-`weapon_holder` turns the actor into a Rust trait that both the player and the NPCs implement (see [Interfaces](../classes/interfaces.md)). Which weapon the pickup gives comes from a data table row: see [Structs and data tables](../classes/structs.md).
+`set_timer` counts the world's time, so the wait pauses with the game (see [Timers](../engine_api/timers.md)). `weapon_holder` turns the actor into a Rust trait that both the player and the NPCs implement (see [Interfaces](../classes/interfaces.md)). Which weapon the pickup gives comes from a data table row: see [Structs and data tables](../classes/structs.md).

@@ -8,6 +8,7 @@
 - [Prerequisites](./getting_started/prerequisites.md)
 - [Installing the CLI](./getting_started/install.md)
 - [Your first project](./getting_started/first_project.md)
+- [Creating a project from the editor](./getting_started/from_the_editor.md)
 - [Project layout](./getting_started/layout.md)
 - [Starting from a template](./getting_started/templates.md)
   - [blank](./templates/blank.md)
@@ -42,6 +43,9 @@
 - [Console commands](./iteration/console.md)
 - [Logging](./iteration/logging.md)
 - [Testing without the engine](./iteration/testing.md)
+- [Automation tests](./iteration/automation.md)
+- [Profiling](./iteration/profiling.md)
+- [Debugging](./iteration/debugging.md)
 
 # Classes
 
@@ -50,6 +54,7 @@
 - [Components](./classes/components.md)
 - [Class defaults](./classes/class_defaults.md)
 - [Engine events](./classes/events.md)
+- [Engine virtuals](./classes/virtuals.md)
 - [Functions](./classes/functions.md)
 - [Blueprint children](./classes/blueprint_child.md)
 - [Rust classes deriving from Rust classes](./classes/inheritance.md)
@@ -61,9 +66,11 @@
 
 - [Object references](./engine_api/object_refs.md)
 - [Calling the engine](./engine_api/calling.md)
+- [Text and localization](./engine_api/text.md)
 - [Spawning actors](./engine_api/spawning.md)
 - [Assets and objects](./engine_api/assets.md)
 - [Timers](./engine_api/timers.md)
+- [Async code](./engine_api/async.md)
 - [Traces and overlaps](./engine_api/traces.md)
 - [Delegates](./engine_api/delegates.md)
 - [Dynamic calls](./engine_api/dynamic_calls.md)
@@ -98,13 +105,20 @@
 - [Data assets](./systems/data_assets.md)
 - [Console commands and variables](./systems/console.md)
 - [Work off the game thread](./systems/tasks.md)
+- [Gameplay tags](./systems/gameplay_tags.md)
+- [The Gameplay Ability System](./systems/abilities.md)
+- [Multiplayer](./systems/multiplayer.md)
 
 # Plugins
 
 - [Overview](./plugins/overview.md)
 - [A new plugin](./plugins/new_plugin.md)
+- [A plugin's classes in the game](./plugins/game_uses_plugin.md)
 - [Editor tools](./plugins/editor_tools.md)
+- [Editor UI](./plugins/editor_ui.md)
+- [Assets and editor utilities](./plugins/editor_assets.md)
 - [Packaging a plugin](./plugins/packaging.md)
+- [Editor tools for any project](./plugins/standalone.md)
 
 # Shipping
 
@@ -116,5 +130,6 @@
 - [Attributes](./reference/attributes.md)
 - [Types](./reference/types.md)
 - [CLI reference](./reference/cli.md)
+- [Performance](./reference/performance.md)
 - [Known limits](./reference/limits.md)
 - [Troubleshooting](./reference/troubleshooting.md)

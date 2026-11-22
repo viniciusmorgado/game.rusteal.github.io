@@ -26,6 +26,130 @@ A build also brings an older project's Rust workspace up to date when the layout
 
 Rusteal is in early development, and its API changes between versions. Commit your project before running `rusteal upgrade`, so the changes it makes, and the compile errors your code may get from a changed API, can be reviewed in a diff.
 
+When the versions it crosses change an API your code may use, `rusteal upgrade` lists what changed before it builds, and the compiler points at each line to change.
+
+## Changes by version
+
+### 0.10
+
+- **Object references are checked by the engine's index and serial number, and live as long as the call that gave them.** These are compile errors to fix, each pointed at by the compiler. See [Object references](../engine_api/object_refs.md).
+  - A `#[uclass]` refuses a Rust-only field that holds a `UObjectRef` (inside an `Option`, a `Vec` or a map too): make it a `#[uproperty]` when the class keeps the object, a `TWeakObjectPtr<T>` when it only watches it, or a `Pinned<T>`.
+  - A closure, a task or a timer callback cannot capture a `UObjectRef`: capture a `TWeakObjectPtr<T>` and call `get()` or `checked()` on it when it runs.
+
+    ```rust
+    // before
+    let me = self.as_ref();
+    pawn.on_destroyed().add(move |_| { if let Ok(mut me) = MyController::from_obj(me) { me.respawn(); } })?;
+    // now: the class's own method, found again on each call
+    pawn.on_destroyed().add_method(self, |me: &mut Self, _destroyed| me.respawn())?;
+    ```
+
+  - A delegate whose parameters include objects binds a method with `add_method(self, Self::on_hit)` (`<name>_add_method` for a `#[udelegate]`), not `add(method(self, Self::on_hit))`.
+  - `load_object`, `find_object`, `new_object_transient`, and engine functions with no object parameter that return one take a `GameThread` first: `let gt = GameThread::current()?;`.
+  - `MyClass::from_obj` gives a `RustRef<MyClass>`, which derefs to the class; setters take `&self`.
+  - `next()`, `load_async()` and an `async #[ufunction]`'s object parameters are `TWeakObjectPtr<T>`.
+  - `UObjectRef`, `Checked`, `Pinned`, `ScriptInterface`, `SubclassOf` and `OwnedStruct` are not `Send`; callbacks no longer need `Send`. Development builds panic on an engine call made off the game thread.
+  - Each `Pinned` keeps its object on its own, and `OwnedStruct` keeps the objects it holds alive.
+
+- **Engine soft and weak references have their own types.** An engine `TSoftObjectPtr<T>` is a `SoftObjectRef<T>` and an engine `TWeakObjectPtr<T>` a `TWeakObjectPtr<T>`, in properties, struct fields, function parameters and returns; they were `UObjectRef<T>`. A soft reference keeps its path when the asset is not loaded, so a function such as `KismetSystemLibrary::load_asset_blocking` takes a path. See [Object references](../engine_api/object_refs.md#engine-soft-and-weak-references).
+
+  ```rust
+  // before
+  let component = hit.get_component();
+  // now: a TWeakObjectPtr, checked() resolves it as it does for UObjectRef
+  let component = hit.get_component().checked()?;
+  ```
+
+- **Engine functions that change a struct passed by reference take `&mut OwnedStruct<T>`;** they took a `*mut u8`:
+
+  ```rust
+  let mut guid = KismetGuidLibrary::new_guid();
+  KismetGuidLibrary::invalidate_guid(&mut guid);
+  ```
+
+- **Engine arrays, maps and sets of soft references hold `SoftObjectRef<T>`,** with their paths; they held the loaded objects, as `UObjectRef<T>`.
+
+- **Rust properties of every type:** the other integers, `Text`, `TWeakObjectPtr<T>`, `SoftClassRef<T>`, `ScriptInterface<dyn I>`, `UeMap<K, V>`, `UeSet<T>`, arrays of `String`, `Text`, soft and weak references; `meta(...)` and doc comment tooltips. See [Properties](../classes/properties.md).
+
+- **Rust functions of every type:** a `#[ufunction]`, a Blueprint event and a `#[udelegate]` take and return what a property holds, with `Vec<T>`, `HashMap<K, V>` and `HashSet<T>` for containers; `&mut T` parameters are out parameters. `BlueprintNativeEvent`, `CallInEditor`, `category`, `meta(...)`, doc comment tooltips, static functions and function libraries; single-cast and sparse delegates (`#[udelegate(single)]`, `#[udelegate(sparse)]`). See [Functions](../classes/functions.md) and [Delegates](../engine_api/delegates.md).
+
+- **`#[uclass]`, `#[component]`, `#[uclass_impl]` and `#[class_defaults]` refuse the arguments they do not take,** which they ignored: remove the ones the compiler points at, they did nothing.
+
+- **Every engine struct is an `OwnedStruct<T>`.** Those with no `StaticStruct` in C++ (`FBox`, `FIntPoint`, `FTimespan`, `FPlatformUserId`, the engine's `NoExportTypes`) were taken and given as a `*const u8`; they are `OwnedStruct<T>` like the others:
+
+  ```rust
+  let span = KismetMathLibrary::from_minutes(1.5);
+  let seconds = KismetMathLibrary::get_total_seconds(&span);
+  ```
+
+- **Engine structs read from the engine are copies Rust owns.** A struct a function returns or a property gives, `OwnedStruct<T>`, is a complete copy, arrays and strings included; dropping it frees them, and `clone()` copies them.
+
+- **Engine `FText` is `Text`,** which keeps its localization ([Text and localization](../engine_api/text.md)). Functions take `impl Into<Text>`, so `set_text("Game over")` still works; what gave a `String` gives a `Text`: `to_string()` for the string. An `FText` parameter with a default value is a required one.
+
+- **Engine soft class references are bound,** as `SoftClassRef<T>`: `KismetSystemLibrary::load_class_asset_blocking(&SoftClassRef::new("/Script/Engine.StaticMeshActor"))`.
+
+- **Engine functions and properties that take an interface are bound.** They were left out; they take the object as a `UObjectRef` of the interface (see [Interfaces](../engine_api/object_refs.md#engine-interfaces)).
+
+- **`bind_action` takes a closure,** or a method with `method(self, Self::look)`, and returns an `ActionBinding` (`unbind()` stops it); it took the name of a `#[ufunction]`. The by-name version is `bind_action_by_name`, for a function a Blueprint defines. `bind_action_instance` gives the action's value with its elapsed and triggered times. See [Input](../recipes/input.md).
+
+  ```rust
+  // before
+  bind_action(&self.as_ref(), action, ETriggerEvent::Triggered, "Look")?;
+  // now
+  bind_action(&self.as_ref(), action, ETriggerEvent::Triggered, method(self, Self::look))?;
+  ```
+
+- **Engine latent functions are `async`.** `KismetSystemLibrary::delay`, `load_asset`, `move_component_to`, `GameplayStatics::load_stream_level` and the others no longer take an `FLatentActionInfo` and return a future of their outputs: add `.await`, in async code. See [Async code](../engine_api/async.md#the-engines-latent-functions).
+
+- **Async code:** `task::spawn_local` runs a future on the game thread, cancelled with its owner; `task::next_frame`, `task::run_blocking`, `timer::sleep` and `timer::sleep_real` wait in it. `SoftObjectRef::load_async`, `loading::load_all` and `loading::load_primary_asset` load in the background; `http::get` and `http::post` send HTTP requests; every multicast delegate has `next()`; an `async #[ufunction]` is a latent Blueprint node. See [Async code](../engine_api/async.md).
+
+- **Timers with closures:** `timer::set_timer` returns a `TimerHandle` to clear, pause and query it, and frees its closure with the timer, as `k2_set_timer_delegate` now does. See [Timers](../engine_api/timers.md).
+
+- **Methods as callbacks:** `method(self, Self::x)` binds a method of the class to a delegate, a timer or an input action, without `#[ufunction]`. See [Delegates](../engine_api/delegates.md#binding-a-method).
+
+- **Native engine events:** the application's lifecycle, worlds and levels, players logging in and out, and a path following component's finished move. See [Delegates](../engine_api/delegates.md#use-case-an-engine-event-that-is-not-a-delegate).
+
+- **Engine virtuals without an event:** Rusteal's bases (`RustealActor`, `RustealPawn`, `RustealCharacter`, `RustealPlayerController`, `RustealGameModeBase`, `RustealActorComponent`, `RustealSceneComponent`, `RustealUserWidget`, `RustealAnimInstance`, `RustealCharacterMovementComponent`, `RustealCommandlet`, `RustealTaggedActor`) raise C++ virtuals such as `PostInitializeComponents`, `TickComponent`, `NativeConstruct`, `NativeUpdateAnimation` and `PhysCustom` as events; `[[codegen.shims]]` in `rusteal.toml` declares more. See [Engine virtuals](../classes/virtuals.md).
+
+- **A Rust function the engine calls off the game thread does not run,** and the Output Log says so once: the functions the engine runs on a worker thread, the animation's thread-safe update among them, are `#[ufunction(ThreadSafe)]` and take the class's `<Class>ThreadSafe` view. They ran on the worker thread before, racing the game thread.
+
+  ```rust
+  // before
+  #[ufunction(Override)]
+  fn blueprint_thread_safe_update_animation(&mut self, delta_time: f32) {}
+  // now
+  #[ufunction(Override, ThreadSafe)]
+  fn blueprint_thread_safe_update_animation(this: HeroAnimThreadSafe, delta_time: f32) {}
+  ```
+
+- **`subobject_class(Name = Type)`** on `#[uclass]` creates a subobject the parent declares as another class: a character's movement component as a Rust one. See [Engine virtuals](../classes/virtuals.md#use-case-a-custom-movement-mode).
+
+- **Tick functions of their own:** `add_tick_function(&object, ETickingGroup, closure)`, with prerequisites and an interval. See [Engine virtuals](../classes/virtuals.md#a-tick-function-of-its-own).
+
+- **`UStructRef::assign`** writes a whole struct into an event's output parameter.
+
+- **The game uses a plugin's Rust classes:** `bindings::plugins::<plugin>` has the classes of every runtime plugin, read from their sources, with their properties and functions; a game class derives from them, and a plugin's hot reload reloads the game when a parent changed. See [A plugin's classes in the game](../plugins/game_uses_plugin.md).
+
+- **Editor UI from Rust:** `slate` builds tabs of text, buttons, check boxes, text and spin boxes and panels, with closures for their values and events; `details::customize_class` customizes a class's details panel, and `details::view` embeds one. See [Editor UI](../plugins/editor_ui.md).
+
+- **Assets and editor utilities:** `RustealFactory` makes a Rust class create new assets and import files; the `editor` template binds Blutility's utility objects, asset and actor actions and utility widgets. See [Assets and editor utilities](../plugins/editor_assets.md).
+
+- **Gameplay tags declared in Rust:** `declare_gameplay_tag` adds a native tag, with its parents, and `gameplay_tag` finds a tag of the project. See [Gameplay tags](../systems/gameplay_tags.md).
+
+- **The Gameplay Ability System in Rust:** with the `gameplay-abilities` feature, `RustealAttributeSet` raises the attribute set's C++ hooks as events, for attribute sets in Rust, next to Rust gameplay effects and abilities. A base in `[[codegen.shims]]` maps an event's parameters (`event_params`, `event_args`), gives it a `default` and has static `functions`, and the game's bindings call the bases' functions. See [The Gameplay Ability System](../systems/abilities.md).
+
+- **A static package for an engine fork with Rust inside:** `rusteal package --static --feature shared-std` links the Rust code into a game whose engine links a Rust static library of its own. See [An engine with Rust inside](../shipping/packaging.md#an-engine-with-rust-inside).
+
+- **The `interactables` and `tour` features take the Intro To Unreal art from the installed engine,** into `Content/DemoTemplate/`, instead of carrying copies of it inside their plugins. A project made from another template now has that folder, and a project made from `intro` already had it. The Unreal Engine installed needs its `Templates/TP_UEIntro_BP`, as a normal installation has; without it, `rusteal new` stops with an error.
+
+- **Production tooling:** `trace_scope!`, `stat_scope!` and `profiling::memory_tag` put Rust code in Unreal Insights, `stat Rusteal` and the memory tracker (see [Profiling](../iteration/profiling.md)); `automation::register_test` makes Rust automation tests (see [Automation tests](../iteration/automation.md)); `loctext!` texts reach the localization gather (see [Text and localization](../engine_api/text.md#translating-texts)); the `vscode` feature adds tasks and debugger configurations (see [Debugging](../iteration/debugging.md)).
+
+- **Multiplayer:** `#[uproperty(Replicated)]`, `ReplicatedUsing = on_rep_x` and `replication = "..."`; remote functions with `#[ufunction(Server, Client or NetMulticast, Reliable or Unreliable)]`, `WithValidation` and `BlueprintAuthorityOnly`; replicated components and `RustealReplicatedObject` subobjects; push model and Iris; the engine's `Server` functions in the bindings; `rusteal package --server`. See [Multiplayer](../systems/multiplayer.md).
+
+- **Engine functions with unsigned or 16-bit integer parameters** pass them to the engine with the right width; they did not compile.
+
+- **An output struct of a Rust event the engine raises keeps its contents.** An event's output struct holding arrays or strings (a gameplay effect spec, a tag container) was copied back over memory it shared with the engine's copy, which could crash; and an unused `#[ufunction]` parameter (`_target`) no longer warns about a non snake case name.
+
 ## Changing the engine version
 
 The bindings are generated from the engine you build with. After installing another engine version, point the CLI at it (see [Installing the CLI](install.md)) and regenerate everything:

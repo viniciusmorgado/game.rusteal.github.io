@@ -7,7 +7,7 @@ rusteal new MyGame --template third-person --feature interactables
 rusteal plugin new Interactables --template interactables   # in an existing project
 ```
 
-It becomes the `Interactables` plugin, in `Plugins/Interactables/`. It brings the engine's `LevelPrototyping` pack (door meshes, cubes) when the project lacks it.
+It becomes the `Interactables` plugin, in `Plugins/Interactables/`. It brings the engine's `LevelPrototyping` pack (door meshes, cubes) when the project lacks it, and copies the art its Blueprints use (the light's material, the tuning fork, the confetti) from the installed engine's Intro To Unreal template into `Content/DemoTemplate/`. A project made from the `intro` template already has it.
 
 ## Trying it
 
@@ -29,6 +29,6 @@ The Rust classes are in `Plugins/Interactables/Rust/interactables/src/`:
 | `SequenceTrigger` | `Actor` | `src/sequence_trigger.rs` |
 | `TriggerSwitch` | `Actor` | `src/trigger.rs` |
 
-Its Blueprints, `BP_ConfettiTrigger`, `BP_DangleBlocks`, `BP_DoorFrame_Unlockable`, `BP_DoorTrigger`, `BP_Light`, `BP_Metasound` and `BP_SequenceTrigger`, children of those classes holding the meshes, materials and widget layouts, are in the plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open **Plugins > Interactables Content**.
+Its Blueprints, `BP_ConfettiTrigger`, `BP_DangleBlocks`, `BP_DoorFrame_Unlockable`, `BP_DoorTrigger`, `BP_Light`, `BP_Metasound` and `BP_SequenceTrigger`, children of those classes that set their meshes, materials and widget layouts, are in the plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open **Plugins > Interactables Content**.
 
 Recipes that use it: [Game flow](../recipes/game_flow.md), [Physics](../recipes/physics.md), [Effects and sound](../recipes/effects.md).

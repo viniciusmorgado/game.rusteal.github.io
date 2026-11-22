@@ -50,3 +50,14 @@ A Blueprint child that changes a value in its **Class Defaults** keeps its value
 ## A Rust parent's defaults
 
 A class whose parent is a Rust class starts from the parent's defaults: the parent's `class_defaults` runs first, then the child's.
+
+## Reading a class's defaults
+
+`SubclassOf<T>::default_object()` gives the class default object of a class, Blueprint's **Get Class Defaults** node (since 0.10): the values an actor of that class spawns with, read without spawning one.
+
+```rust
+let projectile: SubclassOf<Projectile> = self.projectile_class();
+let speed = projectile.default_object()?.initial_speed();
+```
+
+The class default object is shared by every instance: read it, never change it at runtime.

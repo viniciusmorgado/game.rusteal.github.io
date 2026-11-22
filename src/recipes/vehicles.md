@@ -28,7 +28,7 @@ use bindings::chaos_vehicles::{
     WheeledVehiclePawnExt
 };
 use bindings::enhanced_input::{ETriggerEvent, FInputActionValue, InputAction};
-use rusteal_runtime::runtime::Checked;
+use rusteal_runtime::runtime::{Checked, method};
 
 #[uclass(parent = WheeledVehiclePawn)]
 pub struct Car {
@@ -108,14 +108,17 @@ impl Car {
             return Ok(());
         }
 
-        bind_action(&me, self.steering_action(), ETriggerEvent::Triggered, "Steering")?;
-        bind_action(&me, self.steering_action(), ETriggerEvent::Completed, "Steering")?;
-        bind_action(&me, self.throttle_action(), ETriggerEvent::Triggered, "Throttle")?;
-        bind_action(&me, self.throttle_action(), ETriggerEvent::Completed, "Throttle")?;
-        bind_action(&me, self.brake_action(), ETriggerEvent::Triggered, "Brake")?;
-        bind_action(&me, self.brake_action(), ETriggerEvent::Completed, "Brake")?;
-        bind_action(&me, self.handbrake_action(), ETriggerEvent::Started, "StartHandbrake")?;
-        bind_action(&me, self.handbrake_action(), ETriggerEvent::Completed, "StopHandbrake")?;
+        let mut start_handbrake = method(self, Self::start_handbrake);
+        let mut stop_handbrake = method(self, Self::stop_handbrake);
+
+        bind_action(&me, self.steering_action(), ETriggerEvent::Triggered, method(self, Self::steering))?;
+        bind_action(&me, self.steering_action(), ETriggerEvent::Completed, method(self, Self::steering))?;
+        bind_action(&me, self.throttle_action(), ETriggerEvent::Triggered, method(self, Self::throttle))?;
+        bind_action(&me, self.throttle_action(), ETriggerEvent::Completed, method(self, Self::throttle))?;
+        bind_action(&me, self.brake_action(), ETriggerEvent::Triggered, method(self, Self::brake))?;
+        bind_action(&me, self.brake_action(), ETriggerEvent::Completed, method(self, Self::brake))?;
+        bind_action(&me, self.handbrake_action(), ETriggerEvent::Started, move |_| start_handbrake())?;
+        bind_action(&me, self.handbrake_action(), ETriggerEvent::Completed, move |_| stop_handbrake())?;
 
         Ok(())
     }
@@ -123,7 +126,8 @@ impl Car {
 ```
 
 - `get_vehicle_movement_component()` returns the base Chaos movement component; casting it to `ChaosWheeledVehicleMovementComponent` reaches the wheeled vehicle's settings.
-- Binding `Completed` to the same function as `Triggered` sends the final value of the axis (zero) when the key is released, so the car stops steering and accelerating.
+- `method(self, Self::steering)` binds the method itself, checked by the compiler; the handbrake methods take no value, so a closure calls them and ignores it.
+- Binding `Completed` to the same method as `Triggered` sends the final value of the axis (zero) when the key is released, so the car stops steering and accelerating.
 - The car's mesh simulates physics and uses the **Vehicle** collision profile, set in class defaults: `mesh.set_simulate_physics(true)`, `mesh.set_collision_profile_name(FName::new("Vehicle").handle(), Some(true))`.
 
 The Blueprint child (`BP_SportsCar_Pawn` in the template) assigns the skeletal mesh, its physics asset, the Animation Blueprint that turns the wheels, and the input actions.
@@ -299,12 +303,45 @@ fn receive_tick(&mut self, delta_seconds: f32) {
 
 **The goal:** a car upside down for two checks in a row resets itself; a key resets it at any time.
 
-A looping timer checks the car every few seconds:
+A looping timer checks the car every few seconds. Its handle is kept in a Rust-private field, so the timer is cleared when the car leaves play:
+
+```rust
+use std::time::Duration;
+
+use rusteal_runtime::runtime::timer::{self, TimerHandle};
+
+#[uclass(parent = WheeledVehiclePawn)]
+pub struct Car {
+    #[uproperty(EditAnywhere, category = "Flip Check", default = 3.0)]
+    flip_check_time: f32,
+
+    #[uproperty(EditAnywhere, category = "Flip Check", default = -0.2)]
+    flip_check_min_dot: f32,
+
+    previous_flip_check: bool,
+    flip_check_timer: Option<TimerHandle>,
+}
+```
 
 ```rust
 #[ufunction(Override)]
 fn receive_begin_play(&mut self) {
-    KismetSystemLibrary::k2_set_timer(self.as_ref().upcast_to(), "FlippedCheck", 3.0, true, None, None, None);
+    match timer::set_timer(
+        &self.as_ref(),
+        Duration::from_secs_f32(self.flip_check_time()),
+        true,
+        method(self, Self::flipped_check),
+    ) {
+        Ok(timer) => self.set_flip_check_timer(Some(timer)),
+        Err(e) => log::warn!("[Vehicle] failed to set the flip check timer: {e}"),
+    }
+}
+
+#[ufunction(Override)]
+fn receive_end_play(&mut self, _end_play_reason: u8) {
+    if let Some(timer) = self.flip_check_timer() {
+        timer.clear();
+    }
 }
 
 #[ufunction]
@@ -314,7 +351,7 @@ fn flipped_check(&mut self) {
     };
 
     let up_dot = DVec3::Z.dot(mesh.get_up_vector().to_dvec3()) as f32;
-    let check = model::flip_check(self.previous_flip_check(), up_dot, -0.2);
+    let check = model::flip_check(self.previous_flip_check(), up_dot, self.flip_check_min_dot());
 
     if check.reset {
         self.do_reset_vehicle();
@@ -481,7 +518,7 @@ fn start_countdown(&mut self) -> RustealResult<()> {
     start_ui.upcast_to::<UserWidget>().checked()?.add_to_viewport(Some(0));
 
     let countdown = TimeTrialStartUI::from_obj(start_ui)?;
-    countdown.on_countdown_finished_add_ufunction(&self.as_ref(), "StartRace")?;
+    countdown.on_countdown_finished_add(method(self, Self::start_race))?.detach();
     countdown.start_countdown();
 
     Ok(())
@@ -489,10 +526,12 @@ fn start_countdown(&mut self) -> RustealResult<()> {
 ```
 
 ```rust
-TimeTrialUI::from_obj(widget)?.on_race_start_add_ufunction(&controller, "StartRace")?;
+TimeTrialUI::from_obj(widget)?
+    .on_race_start_add(method(self, Self::start_race))?
+    .detach();
 ```
 
-Until the race starts, the controller keeps the car's input off (`pawn.disable_input(controller)` when it possesses it, `enable_input` in `StartRace`). The lap times are plain Rust in `time_trial/model.rs`, with tests:
+Until the race starts, the controller keeps the car's input off (`pawn.disable_input(controller)` when it possesses it, `enable_input` in `start_race`). The lap times are plain Rust in `time_trial/model.rs`, with tests:
 
 ```rust
 impl LapTimes {

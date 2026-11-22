@@ -1,8 +1,8 @@
 # Delegates
 
-Delegates are how the engine says "this happened" to whoever is listening: an actor overlapped, a component was hit, a montage ended, a pawn was destroyed. Rust code listens with a closure or with a function of its class, and Rust classes declare their own delegates for Blueprints and other Rust code to listen to.
+Delegates are how the engine says "this happened" to whoever is listening: an actor overlapped, a component was hit, a montage ended, a pawn was destroyed. Rust code listens with a method of its class or a closure, both checked by the compiler, or awaits the next time a delegate fires; Rust classes declare their own delegates for Blueprints and other Rust code to listen to.
 
-## Use case: reacting to an overlap with a function
+## Use case: reacting to an overlap with a method
 
 **The goal:** a jump pad launches any character that steps on it.
 
@@ -37,17 +37,19 @@ impl JumpPad {
 
     #[ufunction(Override)]
     fn receive_begin_play(&mut self) {
-        let me = self.as_ref();
-
-        if let Err(e) = me
+        let bound = self
+            .as_ref()
             .checked()
-            .and_then(|actor| actor.on_actor_begin_overlap().add_ufunction(&me, "BeginOverlap"))
-        {
-            log::warn!("[MyGame] jump pad overlap: {e}");
+            .and_then(|actor| actor.on_actor_begin_overlap().add_method(self, Self::begin_overlap));
+
+        match bound {
+            Ok(binding) => binding.detach(),
+            Err(e) => log::warn!("[MyGame] jump pad overlap: {e}"),
         }
     }
+}
 
-    #[ufunction]
+impl JumpPad {
     fn begin_overlap(&mut self, _overlapped_actor: UObjectRef<Actor>, other_actor: UObjectRef<Actor>) {
         let Ok(character) = other_actor.cast::<Character>().and_then(|c| c.checked()) else {
             return;
@@ -59,7 +61,29 @@ impl JumpPad {
 }
 ```
 
-`add_ufunction(&target, "Function")` binds a `#[ufunction]` of `target` by its Unreal name, as C++'s `AddDynamic` does. The function takes the delegate's parameters, in order. Binding the same function again does nothing, so it is safe in `receive_begin_play`.
+### Binding a method
+
+`add_method(self, Self::begin_overlap)` (since 0.10) binds a method of the class: the compiler checks that it exists and that its parameters are the delegate's, in order. The method takes `&mut self` and needs no `#[ufunction]`. The object is found again on each call; a call after it is gone does nothing. The objects it receives live as long as the call (see [Object references](object_refs.md#a-reference-lives-as-long-as-the-call-that-gave-it)).
+
+`add_method` also takes a closure whose first parameter is the class, for a method that takes `&self` or different arguments:
+
+```rust
+actor.on_actor_begin_overlap().add_method(self, |me: &mut Self, _overlapped, other| {
+    me.touched(other);
+})?.detach();
+```
+
+`add_method` returns a binding: dropping it unbinds, `detach()` keeps the method bound as long as the object raising the delegate lives. Binding twice calls the method twice: bind in `receive_begin_play`, once.
+
+Structs reach a method as `OwnedStruct<T>`, a copy. A `#[ufunction]` handler that takes a `UStructRef<T>` (because a Blueprint calls it too) is bound with a closure that passes `.as_ref()`:
+
+```rust
+floor.on_component_hit().add_method(self, |me: &mut Self, component, other, other_comp, impulse, hit| {
+    me.on_floor_hit(component, other, other_comp, impulse, hit.as_ref());
+})?.detach();
+```
+
+`method(self, Self::fire)` (`rusteal_runtime::runtime::method`) makes the same kind of closure for the places that take one with no object parameters: timers, input actions, delegates of plain values. A delegate whose parameters include objects takes `add_method`, because those objects live only as long as each call.
 
 For an actor's own overlaps, overriding `receive_actor_begin_overlap` is simpler still (see [Engine events](../classes/events.md)); delegates are for a component's overlaps and for another object's events.
 
@@ -68,19 +92,19 @@ For an actor's own overlaps, overriding `receive_actor_begin_overlap` is simpler
 ```rust
 #[ufunction(Override)]
 fn receive_begin_play(&mut self) {
-    let me = self.as_ref();
-
     let bound = self.trigger().and_then(|trigger| {
-        trigger.checked()?.on_component_begin_overlap().add_ufunction(&me, "OnTriggerOverlap")
+        trigger
+            .checked()?
+            .on_component_begin_overlap()
+            .add_method(self, Self::on_trigger_overlap)
     });
 
-    if let Err(e) = bound {
-        log::warn!("[MyGame] trigger overlap: {e}");
+    match bound {
+        Ok(binding) => binding.detach(),
+        Err(e) => log::warn!("[MyGame] trigger overlap: {e}"),
     }
 }
 
-#[ufunction]
-#[allow(clippy::too_many_arguments)]
 fn on_trigger_overlap(
     &mut self,
     _overlapped_component: UObjectRef<PrimitiveComponent>,
@@ -88,7 +112,7 @@ fn on_trigger_overlap(
     _other_comp: UObjectRef<PrimitiveComponent>,
     _other_body_index: i32,
     _from_sweep: bool,
-    _sweep_result: UStructRef<FHitResult>,
+    _sweep_result: OwnedStruct<FHitResult>,
 ) {
 }
 ```
@@ -105,17 +129,19 @@ The common component delegates and their parameters:
 
 ## Use case: listening with a closure
 
-**The goal:** the player controller respawns the player when its pawn is destroyed.
+**The goal:** the player controller respawns the player when its pawn is destroyed, and tells the game mode.
 
 ```rust
 #[ufunction(Override)]
 fn receive_possess(&mut self, possessed_pawn: UObjectRef<Pawn>) {
-    let controller: UObjectRef<PlayerController> = self.as_ref();
+    let game_mode = TWeakObjectPtr::from_ref(&GameplayStatics::get_game_mode(self.as_ref().upcast_to()));
 
     let bound = possessed_pawn.checked().and_then(|pawn| {
         pawn.on_destroyed().add(move |_destroyed_actor| {
-            if let Ok(mut me) = MyPlayerController::from_obj(controller) {
-                me.respawn();
+            if let Some(game_mode) = game_mode.get() {
+                if let Ok(mut game_mode) = MyGameMode::from_obj(game_mode) {
+                    game_mode.player_died();
+                }
             }
         })
     });
@@ -127,14 +153,14 @@ fn receive_possess(&mut self, possessed_pawn: UObjectRef<Pawn>) {
 }
 ```
 
-`add(closure)` binds a Rust closure, which receives the delegate's parameters. It returns a binding:
+`add(closure)` binds a closure, which receives the delegate's parameters, as a method does. It returns a binding:
 
 - dropping the binding unbinds the closure;
 - `detach()` keeps the closure bound for as long as the object that raises the delegate lives.
 
-The closure captures `UObjectRef`s, which are `Copy`, and turns them back into Rust classes with `from_obj` when it runs: by then the object may be gone, and `from_obj` says so.
+The closure runs in later frames, so it cannot capture a `UObjectRef`, which lives only as long as the call that gave it: the compiler refuses it. It captures a `TWeakObjectPtr` and resolves it when it runs; by then the object may be gone, and `get()` says so. For the class's own object, `add_method(self, |me: &mut Self, _destroyed| me.respawn())` does the same with less code.
 
-Closures and `add_ufunction` both work on any delegate the engine exposes to Blueprints: animation (`on_montage_ended`), AI perception (`on_target_perception_updated`), movement (`on_projectile_stop`), AI moves (`receive_move_completed`), EQS (`on_query_finished_event`). See the [Gameplay recipes](../recipes/index.md).
+Methods and closures work on any delegate the engine exposes to Blueprints: animation (`on_montage_ended`), AI perception (`on_target_perception_updated`), movement (`on_projectile_stop`), AI moves (`receive_move_completed`), EQS (`on_query_finished_event`). See the [Gameplay recipes](../recipes/index.md).
 
 ## Use case: a delegate of your own
 
@@ -163,16 +189,38 @@ impl Health {
 }
 ```
 
-`#[udelegate]` declares a multicast delegate, C++'s `DECLARE_DYNAMIC_MULTICAST_DELEGATE` with a `BlueprintAssignable` property. The method's body stays empty; calling it broadcasts to every listener. The macro adds two methods for Rust listeners:
+`#[udelegate]` declares a multicast delegate, C++'s `DECLARE_DYNAMIC_MULTICAST_DELEGATE` with a `BlueprintAssignable` property. The method's body stays empty; calling it broadcasts to every listener. The macro adds methods for Rust listeners:
 
 ```rust
+health.on_health_changed_add_method(self, Self::refresh_health)?.detach();
+
 health.on_health_changed_add(|current, max| {
 })?.detach();
-
-health.on_health_changed_add_ufunction(&hud.as_ref(), "RefreshHealth")?;
 ```
 
-Its parameters are scalars, objects, classes and structs (as `&OwnedStruct<T>`; a closure receives an `OwnedStruct<T>`). `#[udelegate(name = "...")]` gives the Unreal name when PascalCase is not it.
+Its parameters are the types a [`#[ufunction]`](../classes/functions.md#parameters-and-return-values) takes (since 0.10): scalars, strings, `FName`, `Text`, objects, classes, soft and weak references, interfaces, `Vec<T>`, `HashMap<K, V>`, `HashSet<T>`, and structs as `OwnedStruct<T>` or `&OwnedStruct<T>` (a closure receives an `OwnedStruct<T>`). `#[udelegate(name = "...")]` gives the Unreal name when PascalCase is not it.
+
+### Single-cast and sparse delegates
+
+| Declaration | C++ | What it is |
+|---|---|---|
+| `#[udelegate]` | `DECLARE_DYNAMIC_MULTICAST_DELEGATE` | Any number of listeners, Blueprint or Rust. |
+| `#[udelegate(sparse)]` | `DECLARE_DYNAMIC_MULTICAST_SPARSE_DELEGATE` | The same for its listeners, but it takes one byte in the object until something binds to it, where a multicast delegate takes sixteen. For a delegate on a class with many instances that is rarely bound, such as an event on every projectile or every tree. |
+| `#[udelegate(single)]` | `DECLARE_DYNAMIC_DELEGATE` | One binding at most: binding again replaces it. Calling the method calls the binding, and does nothing when there is none. Blueprints cannot bind to it. |
+
+A single-cast delegate's methods are named `_bind` instead of `_add`:
+
+```rust
+#[udelegate(single)]
+pub fn on_answer(&self, choice: i32, text: String) {}
+```
+
+```rust
+let binding = dialog.on_answer_bind(|choice, text| {
+})?;
+```
+
+Dropping the binding unbinds it, unless a later binding has replaced it; `on_answer_bind_ufunction(&target, "Function")` binds a UFunction instead.
 
 ### In the editor
 
@@ -180,6 +228,57 @@ In a Blueprint that holds the component, select the component in the **Component
 
 > **Screenshot:** the Events section of the Details panel listing On Health Changed for a Rust component. *(images/engine_api/udelegate_events.png)*
 
+## Use case: waiting for a delegate
+
+**The goal:** in async code, go on when something happens, without a handler.
+
+```rust
+let destroyed = boss.on_destroyed().next();
+let opened = gate.on_opened_next();
+
+let _killer = destroyed.await?;
+opened.await?;
+```
+
+`next()` (since 0.10) binds at once and unbinds when the delegate has fired, and gives its parameters: one value, or a tuple when there are several. Objects come as `TWeakObjectPtr`, because they are used after the `.await`: `_killer.get()` gives the object while it exists. A `#[udelegate]` has `<name>_next()`. When the object goes away first, the future gives an error instead of waiting forever. Take `next()` before doing what makes the delegate fire, as the binding starts then. See [Async code](async.md).
+
+## Use case: an engine event that is not a delegate
+
+Some engine events exist only in C++, as native delegates: the application going to the background, a world being initialized, a level streamed in, a player logging in. Rusteal binds a few of them (since 0.10), with `add(closure)` and `next()` as for the others:
+
+| Events | What they are |
+|---|---|
+| `core_events::pre_exit`, `will_enter_background`, `has_entered_foreground`, `will_deactivate`, `has_reactivated` | the application's lifecycle (`FCoreDelegates`) |
+| `world_events::initialized`, `cleanup`, `level_added`, `level_removed` | worlds and their levels (`FWorldDelegates`) |
+| `game_mode_events::post_login`, `logout` | players joining and leaving (`FGameModeEvents`) |
+| `component.on_request_finished()` | a path following component's move ending, with its request id and result (`ai` feature) |
+
+```rust
+use bindings::prelude::*;
+
+core_events::will_enter_background()
+    .add(move |()| save_progress())?
+    .detach();
+```
+
+Their bindings unbind when dropped, as the others do; `detach()` keeps them until the library unloads.
+
+## Use case: an engine function that takes a delegate
+
+Some engine functions take a delegate to call later: a timeline's track, a timer, a widget's event. In Rust they take a closure, whose arguments are the delegate's (since 0.10):
+
+```rust
+timeline.add_interp_float(curve, move |alpha| {
+    // called on every update of the timeline, with the curve's value
+}, None, None);
+```
+
+The closure lives as long as the engine keeps the delegate, and is freed with it: when the object whose function took it is destroyed. Timers set with `KismetSystemLibrary::k2_set_timer_delegate` free theirs with the timer (see [Timers](timers.md)). Delegates that return a value, or write to an argument, are not bound.
+
+## Binding a function by name
+
+`add_ufunction(&target, "Function")` binds the UFunction of `target` with that Unreal name, as C++'s `AddDynamic` does; binding the same function again does nothing. A name is checked when the game runs, not when it compiles: it is for a function a Blueprint defines. A `#[udelegate]` has `<name>_add_ufunction(&target, "Function")`.
+
 ## Delegates that cannot be bound
 
-Only delegates exposed to Blueprints can be bound. Some engine delegates exist only in C++ (`UPathFollowingComponent::OnRequestFinished`, for one); for those, look for a Blueprint-exposed delegate raised for the same thing (the AI controller's `ReceiveMoveCompleted`).
+Only delegates exposed to Blueprints can be bound, and the native ones in the table above. For another engine delegate that exists only in C++, look for a Blueprint-exposed delegate raised for the same thing.

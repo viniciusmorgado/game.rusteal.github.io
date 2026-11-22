@@ -40,7 +40,8 @@ In the **Output Log** tab, **Filters > Categories** can show `LogRusteal` alone.
 Some failures are logged without any code of yours:
 
 - A panic in your code is caught where the engine called into Rust, and logged as an error. The editor keeps running; the function that panicked stops there.
-- A function bound by name (an input action, a delegate, a timer) that does not exist is logged with its name.
+- A function bound by name (`bind_action_by_name`, `add_ufunction`, `k2_set_timer`) that does not exist is logged with its name.
+- An `async #[ufunction]` that returns an error logs it when it finishes.
 - A library built against another Rusteal version is refused, with both versions in the log.
 
 ## Logging a `RustealResult`
