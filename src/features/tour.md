@@ -7,7 +7,7 @@ rusteal new MyGame --template third-person --feature tour
 rusteal plugin new Tour --template tour   # in an existing project
 ```
 
-It becomes the `Tour` plugin, in `Plugins/Tour/`. It brings the engine's `LevelPrototyping` pack when the project lacks it.
+It becomes the `Tour` plugin, in `Plugins/Tour/`. It brings the engine's `LevelPrototyping` pack when the project lacks it, and copies the art its Blueprints use (the gizmos, the template boxes, the editor panels' images, the spline's materials) from the installed engine's Intro To Unreal template into `Content/DemoTemplate/`. A project made from the `intro` template already has it.
 
 ## Trying it
 
@@ -34,6 +34,6 @@ The Rust classes are in `Plugins/Tour/Rust/tour/src/`:
 | `TextSwitcher` | `Actor` | `src/texts.rs` |
 | `StationTitle` | `Actor` | `src/texts.rs` |
 
-Its Blueprints, `BP_GizmoDemo`, `BP_KeyboardKey`, `BP_MouseKey`, `BP_SplinePath`, `BP_TemplateCube`, `BP_TextSwitcher`, `BP_Titles` and `BP_UI_Update`, children of those classes holding the meshes, materials and widget layouts, are in the plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open **Plugins > Tour Content**.
+Its Blueprints, `BP_GizmoDemo`, `BP_KeyboardKey`, `BP_MouseKey`, `BP_SplinePath`, `BP_TemplateCube`, `BP_TextSwitcher`, `BP_Titles` and `BP_UI_Update`, children of those classes that set their meshes, materials and widget layouts, are in the plugin's content: in the **Content Browser**, click **Settings** and check **Show Plugin Content**, then open **Plugins > Tour Content**.
 
 Recipes that use it: [UI](../recipes/ui.md).
